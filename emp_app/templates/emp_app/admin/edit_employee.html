@@ -1,0 +1,147 @@
+{% extends 'emp_app/base.html' %}
+{% load widget_tweaks %}
+{% load static %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-4xl mx-auto">
+        <div class="text-center mb-10">
+            <h1 class="text-3xl font-bold text-blue-900 mb-3">Edit Employee</h1>
+            <p class="text-gray-600">Update the employee's information below</p>
+        </div>
+        
+        <form method="post" enctype="multipart/form-data" class="bg-white bg-opacity-95 p-8 rounded-xl shadow-xl border border-blue-100">
+            {% csrf_token %}
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-6">
+                <!-- Left Column -->
+                <div class="space-y-6">
+                    <div>
+                        <label class="block text-blue-900 text-sm font-semibold mb-2" for="id_name">
+                            Employee Name <span class="text-red-500">*</span>
+                        </label>
+                        {{ form.name|add_class:"bg-blue-50 border border-blue-200 text-blue-900 rounded-lg w-full p-3 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition-all duration-200" }}
+                        {% if form.name.errors %}
+                            <p class="text-red-500 text-xs mt-1">{{ form.name.errors.as_text }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <label class="block text-blue-900 text-sm font-semibold mb-2" for="id_profile_picture">
+                            Profile Picture
+                        </label>
+                        <div class="flex items-center">
+                            <div class="flex-1">
+                                <input type="file" name="profile_picture" id="id_profile_picture" 
+                                       class="block w-full text-sm text-blue-700
+                                       file:mr-4 file:py-2.5 file:px-4
+                                       file:rounded-lg file:border-0
+                                       file:text-sm file:font-semibold
+                                       file:bg-yellow-400 file:text-blue-900
+                                       hover:file:bg-yellow-300 transition-colors duration-200"
+                                       onchange="previewImage(this)">
+                                <p class="text-gray-500 text-xs mt-1">Recommended size: 300x300px</p>
+                            </div>
+                        </div>
+                        {% if form.profile_picture.errors %}
+                            <p class="text-red-500 text-xs mt-1">{{ form.profile_picture.errors.as_text }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <label class="block text-blue-900 text-sm font-semibold mb-2" for="id_employee_id">
+                            Employee ID <span class="text-red-500">*</span>
+                        </label>
+                        {{ form.employee_id|add_class:"bg-blue-50 border border-blue-200 text-blue-900 rounded-lg w-full p-3 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition-all duration-200" }}
+                        {% if form.employee_id.errors %}
+                            <p class="text-red-500 text-xs mt-1">{{ form.employee_id.errors.as_text }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Right Column -->
+                <div class="space-y-6">
+                    <div>
+                        <label class="block text-blue-900 text-sm font-semibold mb-2" for="id_phone_number">
+                            Phone Number <span class="text-red-500">*</span>
+                        </label>
+                        {{ form.phone_number|add_class:"bg-blue-50 border border-blue-200 text-blue-900 rounded-lg w-full p-3 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition-all duration-200" }}
+                        <p class="text-blue-600 text-xs mt-1">Format: 09XXXXXXXXX (11 digits)</p>
+                        {% if form.phone_number.errors %}
+                            <p class="text-red-500 text-xs mt-1">{{ form.phone_number.errors.as_text }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <label class="block text-blue-900 text-sm font-semibold mb-2" for="id_age">
+                            Age <span class="text-red-500">*</span>
+                        </label>
+                        {{ form.age|add_class:"bg-blue-50 border border-blue-200 text-blue-900 rounded-lg w-full p-3 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition-all duration-200" }}
+                        {% if form.age.errors %}
+                            <p class="text-red-500 text-xs mt-1">{{ form.age.errors.as_text }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <label class="block text-blue-900 text-sm font-semibold mb-2" for="id_salary">
+                            Salary <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-blue-700 font-medium">₱</span>
+                            {{ form.salary|add_class:"bg-blue-50 border border-blue-200 text-blue-900 rounded-lg w-full pl-10 p-3 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition-all duration-200" }}
+                        </div>
+                        {% if form.salary.errors %}
+                            <p class="text-red-500 text-xs mt-1">{{ form.salary.errors.as_text }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-8 space-y-6">
+                <div>
+                    <label class="block text-blue-900 text-sm font-semibold mb-2" for="id_address">
+                        Address <span class="text-red-500">*</span>
+                    </label>
+                    {{ form.address|add_class:"bg-blue-50 border border-blue-200 text-blue-900 rounded-lg w-full p-3 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition-all duration-200" }}
+                    {% if form.address.errors %}
+                        <p class="text-red-500 text-xs mt-1">{{ form.address.errors.as_text }}</p>
+                    {% endif %}
+                </div>
+                
+                <div>
+                    <label class="block text-blue-900 text-sm font-semibold mb-2" for="id_status">
+                        Status <span class="text-red-500">*</span>
+                    </label>
+                    {{ form.status|add_class:"bg-blue-50 border border-blue-200 text-blue-900 rounded-lg w-full p-3 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition-all duration-200" }}
+                    {% if form.status.errors %}
+                        <p class="text-red-500 text-xs mt-1">{{ form.status.errors.as_text }}</p>
+                    {% endif %}
+                </div>
+                <!-- Position Selection -->
+                <div>
+                    <label class="block text-blue-900 text-sm font-semibold mb-2" for="id_position">
+                        Position <span class="text-red-500">*</span>
+                    </label>
+                    {{ form.position|add_class:"bg-blue-50 border border-blue-200 text-blue-900 rounded-lg w-full p-3 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition-all duration-200" }}
+                    {% if form.position.errors %}
+                        <p class="text-red-500 text-xs mt-1">{{ form.position.errors.as_text }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="flex justify-end mt-10 space-x-4">
+                <a href="{% url 'view_table' %}" 
+                   class="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors duration-200 font-medium">
+                    Cancel
+                </a>
+                <button type="submit" 
+                        class="px-8 py-3 bg-yellow-400 text-blue-900 font-semibold rounded-lg hover:bg-yellow-300 transition-colors duration-200 shadow-md focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2">
+                    Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="{% static 'emp_app/js/imagepreview.js' %}"></script>
+{% endblock %}

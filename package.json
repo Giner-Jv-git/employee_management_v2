@@ -1,0 +1,9 @@
+{
+  "scripts": {
+    "dev": " @tailwindcss -i ./emp_app/static/emp_app/css/input.css -o ./emp_app/static/emp_app/css/output.css --watch"
+  },
+  "dependencies": {
+    "@tailwindcss/cli": "^4.1.8",
+    "tailwindcss": "^4.1.8"
+  }
+}

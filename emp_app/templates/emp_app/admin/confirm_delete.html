@@ -1,0 +1,68 @@
+{% extends 'emp_app/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="h-screen bg-gray-50 flex items-center justify-center">
+    <div class="w-full max-w-md bg-white rounded-lg shadow-xl">
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-red-500 to-red-600 px-8 py-6">
+            <h2 class="text-2xl font-bold text-white flex items-center">
+                <svg class="h-7 w-7 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                Delete Employee
+            </h2>
+        </div>
+        
+        <!-- Content -->
+        <div class="p-8">
+            <div class="flex items-center mb-8">
+                {% if employee.profile_picture %}
+                <div class="flex-shrink-0 mr-6">
+                    <img src="{{ employee.profile_picture.url }}" alt="{{ employee.name }}" 
+                         class="h-20 w-20 rounded-full object-cover border-2 border-red-200 shadow-sm">
+                </div>
+                {% endif %}
+                <div>
+                    <p class="text-gray-600 mb-3">Are you sure you want to permanently delete</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ employee.name }}</p>
+                    <p class="text-sm text-gray-500 mt-2">Employee ID: {{ employee.employee_id }}</p>
+                </div>
+            </div>
+            
+            <div class="bg-red-50 border border-red-100 rounded-lg p-6 mb-8">
+                <div class="flex items-start">
+                    <svg class="h-5 w-5 text-red-500 mt-0.5 mr-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    <div>
+                        <p class="text-sm text-red-600 font-medium mb-1">Warning</p>
+                        <p class="text-sm text-red-600">This action cannot be undone. All employee data will be permanently removed from the system.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Actions -->
+        <div class="bg-gray-50 px-8 py-6 flex justify-end space-x-4">
+            <a href="{% url 'view_table' %}" 
+               class="px-6 py-2.5 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100 transition-colors duration-200 flex items-center font-medium">
+                <svg class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                Cancel
+            </a>
+            <form method="post" action="{% url 'delete_employee' employee.pk %}">
+                {% csrf_token %}
+                <button type="submit" 
+                        class="px-6 py-2.5 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors duration-200 flex items-center font-medium shadow-sm">
+                    <svg class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    Delete Employee
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

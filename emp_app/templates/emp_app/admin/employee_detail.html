@@ -1,0 +1,130 @@
+{% extends 'emp_app/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-4xl mx-auto">
+        <div class="text-center mb-10">
+            <h1 class="text-3xl font-bold text-blue-900 mb-3">Employee Details</h1>
+            <p class="text-gray-600">View and manage employee information</p>
+        </div>
+        
+        <div class="bg-white bg-opacity-95 p-8 rounded-xl shadow-xl border border-blue-100">
+            <!-- Profile Header -->
+            <div class="flex items-center mb-8 pb-8 border-b border-gray-200">
+                <div class="mr-6">
+                    {% if employee.profile_picture %}
+                        <img src="{{ employee.profile_picture.url }}" alt="{{ employee.name }}" 
+                             class="h-32 w-32 rounded-full object-cover border-4 border-blue-100 shadow-lg">
+                    {% else %}
+                        <div class="h-32 w-32 rounded-full bg-blue-50 border-4 border-blue-100 shadow-lg flex items-center justify-center">
+                            <span class="text-4xl font-bold text-blue-400">{{ employee.name|first|upper }}</span>
+                        </div>
+                    {% endif %}
+                </div>
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900">{{ employee.name }}</h2>
+                    <p class="text-gray-600">Employee ID: {{ employee.employee_id }}</p>
+                    <div class="mt-2">
+                        <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full 
+                                    {% if employee.status == 'active' %}bg-green-100 text-green-800
+                                    {% else %}bg-red-100 text-red-800{% endif %}">
+                            {{ employee.get_status_display }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Employee Information -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-6">
+                <!-- Left Column -->
+                <div class="space-y-6">
+                    <div>
+                        <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">Contact Information</h3>
+                        <div class="bg-gray-50 rounded-lg p-4 space-y-3">
+                            <div>
+                                <p class="text-sm text-gray-500">Phone Number</p>
+                                <p class="text-gray-900 font-medium">{{ employee.phone_number }}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">Address</p>
+                                <p class="text-gray-900 font-medium">{{ employee.address }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">Personal Information</h3>
+                        <div class="bg-gray-50 rounded-lg p-4 space-y-3">
+                            <div>
+                                <p class="text-sm text-gray-500">Age</p>
+                                <p class="text-gray-900 font-medium">{{ employee.age }} years old</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">Salary</p>
+                                <p class="text-gray-900 font-medium">₱{{ employee.salary }}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">Position</p>
+                                <p class="text-gray-900 font-medium">{{ employee.get_position_display }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Right Column -->
+                <div class="space-y-6">
+                    <div>
+                        <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">System Information</h3>
+                        <div class="bg-gray-50 rounded-lg p-4 space-y-3">
+                            <div>
+                                <p class="text-sm text-gray-500">Created At</p>
+                                <p class="text-gray-900 font-medium">{{ employee.created_at|date:"F d, Y H:i" }}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">Last Modified</p>
+                                <p class="text-gray-900 font-medium">{{ employee.updated_at|date:"F d, Y H:i" }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Add this inside your grid, as a new column or section -->
+                    <div>
+                        <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">Authentication</h3>
+                        <div class="bg-gray-50 rounded-lg p-4 space-y-3">
+                            <div>
+                                <p class="text-sm text-gray-500">Username</p>
+                                <p class="text-gray-900 font-medium">{{ employee.user.username }}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">Password</p>
+                                <p class="text-gray font-medium italic text-gray-400">
+                                    {% if employee.initial_password %}
+                                        {{ employee.initial_password }}
+                                    {% else %}
+                                        Not viewable for security
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="flex justify-end mt-10 space-x-4">
+                <a href="{% url 'view_table' %}" 
+                   class="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors duration-200 font-medium">
+                    Back to List
+                </a>
+                <a href="{% url 'edit_employee' employee.pk %}" 
+                   class="px-8 py-3 bg-yellow-400 text-blue-900 font-semibold rounded-lg hover:bg-yellow-300 transition-colors duration-200 shadow-md focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2">
+                    Edit Employee
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}

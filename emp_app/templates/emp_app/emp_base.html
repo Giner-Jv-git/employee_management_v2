@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Employee Portal{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Tailwind CSS CDN (remove if you use static build) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-blue-100 min-h-screen">
+    <!-- Navbar -->
+    <nav class="bg-white shadow mb-8">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <span class="text-xl font-bold text-blue-700">Employee Portal</span>
+            </div>
+            <div class="flex items-center space-x-4">
+                <a href="{% url 'employee_profile' %}" class="text-blue-700 hover:underline font-medium">My Profile</a>
+                <a href="{% url 'request_leave' %}" class="text-blue-700 hover:underline font-medium">Request Leave</a>
+                <a href="{% url 'logout' %}" class="text-red-600 hover:underline font-medium">Logout</a>
+            </div>
+        </div>
+    </nav>
+    <!-- Main Content -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
