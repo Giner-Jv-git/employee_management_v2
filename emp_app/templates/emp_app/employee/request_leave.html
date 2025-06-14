@@ -1,0 +1,38 @@
+
+{% extends 'emp_app/emp_base.html' %}
+{% block content %}
+<h2 class="text-xl font-bold mb-4">Request Leave</h2>
+<form method="post" class="mb-6">
+    {% csrf_token %}
+    <textarea name="reason" rows="3" class="w-full border rounded p-2 mb-2" placeholder="Reason for leave" required></textarea>
+    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Submit Request</button>
+</form>
+<h3 class="text-lg font-semibold mb-2">My Leave Requests</h3>
+<table class="min-w-full bg-white rounded shadow">
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Reason</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for req in leave_requests %}
+        <tr>
+            <td>{{ req.created_at|date:"Y-m-d" }}</td>
+            <td>{{ req.reason }}</td>
+            <td>
+                <span class="px-2 py-1 rounded text-xs
+                    {% if req.status == 'pending' %}bg-yellow-100 text-yellow-800
+                    {% elif req.status == 'approved' %}bg-green-100 text-green-800
+                    {% else %}bg-red-100 text-red-800{% endif %}">
+                    {{ req.get_status_display }}
+                </span>
+            </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="3">No leave requests yet.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

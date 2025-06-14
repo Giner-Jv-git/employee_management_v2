@@ -1,0 +1,26 @@
+{% extends 'emp_app/emp_base.html' %}
+{% block content %}
+<h2 class="text-xl font-bold mb-4">My Pay Slips</h2>
+<table class="min-w-full bg-white rounded shadow">
+    <thead>
+        <tr>
+            <th>Period</th>
+            <th>Amount</th>
+            <th>Issued At</th>
+            <th>Notes</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for slip in payslips %}
+        <tr>
+            <td>{{ slip.period_start }} - {{ slip.period_end }}</td>
+            <td>₱{{ slip.amount }}</td>
+            <td>{{ slip.issued_at|date:"Y-m-d" }}</td>
+            <td>{{ slip.notes }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4">No pay slips yet.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,27 @@
+
+{% extends 'emp_app/emp_base.html' %}
+{% block content %}
+<h2 class="text-xl font-bold mb-4">My Attendance</h2>
+<table class="min-w-full bg-white rounded shadow">
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Time In</th>
+            <th>Time Out</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for att in attendance %}
+        <tr>
+            <td>{{ att.date }}</td>
+            <td>{{ att.time_in }}</td>
+            <td>{{ att.time_out|default:"-" }}</td>
+            <td>{{ att.get_status_display }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4">No attendance records yet.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

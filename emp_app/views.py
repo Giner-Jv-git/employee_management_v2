@@ -10,7 +10,7 @@ from django.utils import timezone
 from django.utils.crypto import get_random_string
 from datetime import timedelta
 from functools import wraps
-from .models import EmployeeData, LeaveRequest
+from .models import EmployeeData, LeaveRequest, PaySlip, Attendance
 from .forms import EmployeeForm
 from django.contrib.auth.models import User
 
@@ -243,17 +243,78 @@ def request_leave(request):
     if request.method == 'POST':
         reason = request.POST.get('reason')
         LeaveRequest.objects.create(employee=employee, reason=reason)
-        messages.success(request, 'Leave request submitted successfully!')
-    
-    leave_requests = LeaveRequest.objects.filter(employee=employee)
+        messages.success(request, "Leave request submitted!")
+    leave_requests = LeaveRequest.objects.filter(employee=employee).order_by('-created_at')
     return render(request, 'emp_app/employee/request_leave.html', {'leave_requests': leave_requests})
 
 @admin_required
+def leave_requests_admin(request):
+    requests = LeaveRequest.objects.all().order_by('-created_at')
+    return render(request, 'emp_app/admin/leave_requests.html', {'requests': requests})
+
+@admin_required
 def approve_leave(request, pk):
-    leave = get_object_or_404(LeaveRequest, pk=pk)
+    leave = LeaveRequest.objects.get(pk=pk)
     leave.status = 'approved'
     leave.save()
     leave.employee.status = 'inactive'
     leave.employee.save()
-    messages.success(request, f'Leave request for {leave.employee.name} approved!')
-    return redirect('admin_leave_requests')
+    messages.success(request, "Leave approved and employee set to inactive.")
+    return redirect('leave_requests_admin')
+
+@admin_required
+def reject_leave(request, pk):
+    leave = LeaveRequest.objects.get(pk=pk)
+    leave.status = 'rejected'
+    leave.save()
+    messages.success(request, "Leave rejected.")
+    return redirect('leave_requests_admin')
+
+@employee_required
+def payslip_list(request):
+    payslips = PaySlip.objects.filter(employee=request.user.employee_profile).order_by('-issued_at')
+    return render(request, 'emp_app/employee/payslip_list.html', {'payslips': payslips})
+
+@employee_required
+def attendance_list(request):
+    attendance = Attendance.objects.filter(employee=request.user.employee_profile).order_by('-date')
+    return render(request, 'emp_app/employee/attendance_list.html', {'attendance': attendance})
+
+@admin_required
+def add_payslip(request, employee_id):
+    employee = EmployeeData.objects.get(pk=employee_id)
+    if request.method == 'POST':
+        period_start = request.POST['period_start']
+        period_end = request.POST['period_end']
+        amount = request.POST['amount']
+        notes = request.POST.get('notes', '')
+        PaySlip.objects.create(
+            employee=employee,
+            period_start=period_start,
+            period_end=period_end,
+            amount=amount,
+            notes=notes
+        )
+        messages.success(request, "Pay slip added!")
+        return redirect('admin_employee_detail', pk=employee_id)
+    return render(request, 'emp_app/admin/add_payslip.html', {'employee': employee})
+
+@admin_required
+def add_attendance(request, employee_id):
+    employee = EmployeeData.objects.get(pk=employee_id)
+    if request.method == 'POST':
+        date = request.POST['date']
+        time_in = request.POST['time_in']
+        time_out = request.POST.get('time_out')
+        status = request.POST['status']
+        Attendance.objects.create(
+            employee=employee,
+            date=date,
+            time_in=time_in,
+            time_out=time_out,
+            status=status
+        )
+        messages.success(request, "Attendance recorded!")
+        return redirect('admin_employee_detail', pk=employee_id)
+    return render(request, 'emp_app/admin/add_attendance.html', {'employee': employee})
+

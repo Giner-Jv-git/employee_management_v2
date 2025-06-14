@@ -76,40 +76,20 @@ class LeaveRequest(models.Model):
     def __str__(self):
         return f"Leave request for {self.employee.name}"
 
-class HRRequest(models.Model):
-    TYPE_CHOICES = [
-        ('remove_employee', 'Remove Employee'),
-        ('add_employee', 'Add Employee'),
-    ]
-    
-    STATUS_CHOICES = [
-        ('pending', 'Pending'),
-        ('approved', 'Approved'),
-        ('rejected', 'Rejected'),
-    ]
-    
-    request_type = models.CharField(max_length=20, choices=TYPE_CHOICES)
-    employee_data = models.JSONField(null=True, blank=True)  # For add requests
-    employee = models.ForeignKey(
-        EmployeeData, 
-        on_delete=models.CASCADE, 
-        null=True, 
-        blank=True
-    )  # For remove requests
-    request_by = models.ForeignKey(User, on_delete=models.CASCADE)
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
-    processed_by = models.ForeignKey(
-        User, 
-        on_delete=models.SET_NULL, 
-        null=True, 
-        blank=True, 
-        related_name='processed_hr_requests'
-    )
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+class PaySlip(models.Model):
+    employee = models.ForeignKey(EmployeeData, on_delete=models.CASCADE)
+    period_start = models.DateField()
+    period_end = models.DateField()
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    issued_at = models.DateTimeField(auto_now_add=True)
+    notes = models.TextField(blank=True)
 
-    def __str__(self):
-        return f"{self.get_request_type_display()} request by {self.request_by.username}"
+class Attendance(models.Model):
+    employee = models.ForeignKey(EmployeeData, on_delete=models.CASCADE)
+    date = models.DateField()
+    time_in = models.TimeField()
+    time_out = models.TimeField(null=True, blank=True)
+    status = models.CharField(max_length=20, choices=[('present', 'Present'), ('absent', 'Absent')])
 
 # Signal to create profile when user is created
 @receiver(post_save, sender=User)
