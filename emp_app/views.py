@@ -249,7 +249,7 @@ def request_leave(request):
 
 @admin_required
 def leave_requests_admin(request):
-    requests = LeaveRequest.objects.all().order_by('-created_at')
+    requests = LeaveRequest.objects.select_related('employee').order_by('-created_at')
     return render(request, 'emp_app/admin/leave_requests.html', {'requests': requests})
 
 @admin_required
@@ -257,7 +257,7 @@ def approve_leave(request, pk):
     leave = LeaveRequest.objects.get(pk=pk)
     leave.status = 'approved'
     leave.save()
-    leave.employee.status = 'inactive'
+    leave.employee.status = 'inactive'  # Optional: set employee inactive on approval
     leave.employee.save()
     messages.success(request, "Leave approved and employee set to inactive.")
     return redirect('leave_requests_admin')
@@ -314,7 +314,63 @@ def add_attendance(request, employee_id):
             time_out=time_out,
             status=status
         )
-        messages.success(request, "Attendance recorded!")
+        messages.success(request, f"Attendance added for {employee.name}!")
         return redirect('admin_employee_detail', pk=employee_id)
     return render(request, 'emp_app/admin/add_attendance.html', {'employee': employee})
 
+
+@admin_required
+def attendance_management(request):
+    employees = EmployeeData.objects.all()
+    recent_attendance = Attendance.objects.select_related('employee').order_by('-date')[:20]
+    return render(request, 'emp_app/admin/attendance_management.html', {
+        'employees': employees,
+        'recent_attendance': recent_attendance
+    })
+@admin_required
+def payslip_management(request):
+    employees = EmployeeData.objects.all()
+    recent_payslips = PaySlip.objects.select_related('employee').order_by('-issued_at')[:20]
+    return render(request, 'emp_app/admin/payslip_management.html', {
+        'employees': employees,
+        'recent_payslips': recent_payslips
+    })
+# Employee attendance view (for employees to clock in/out)
+@employee_required
+def employee_clock_attendance(request):  # New name to avoid conflicts
+    """Employee clock in/out page with manual time entry"""
+    employee = request.user.employee_profile
+    today = timezone.now().date()
+    current_time = timezone.now().strftime('%H:%M')
+    
+    # Get today's attendance
+    today_attendance = Attendance.objects.filter(employee=employee, date=today).first()
+    
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        if action == 'clock_in' and not today_attendance:
+            time_in = request.POST.get('time_in')
+            status = request.POST.get('status', 'present')
+            
+            Attendance.objects.create(
+                employee=employee,
+                date=today,
+                time_in=time_in,
+                status=status
+            )
+            messages.success(request, f'Successfully clocked in at {time_in}!')
+            
+        elif action == 'clock_out' and today_attendance and not today_attendance.time_out:
+            time_out = request.POST.get('time_out')
+            today_attendance.time_out = time_out
+            today_attendance.save()
+            messages.success(request, f'Successfully clocked out at {time_out}!')
+        
+        return redirect('employee_clock_attendance')
+    
+    return render(request, 'emp_app/employee/clock_attendance.html', {
+        'today_attendance': today_attendance,
+        'employee': employee,
+        'current_time': current_time
+    })

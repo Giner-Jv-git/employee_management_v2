@@ -1,0 +1,72 @@
+{% extends 'emp_app/base.html' %}
+{% block content %}
+<div class="max-w-6xl mx-auto p-6">
+    <div class="mb-8">
+        <h1 class="text-3xl font-semibold text-gray-900 mb-2">Leave Requests</h1>
+        <p class="text-gray-600">Review and manage employee leave requests</p>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        {% if requests %}
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50 border-b border-gray-200">
+                        <tr>
+                            <th class="text-left py-4 px-6 font-medium text-gray-900">Employee</th>
+                            <th class="text-left py-4 px-6 font-medium text-gray-900">Requested</th>
+                            <th class="text-left py-4 px-6 font-medium text-gray-900">Reason</th>
+                            <th class="text-left py-4 px-6 font-medium text-gray-900">Status</th>
+                            <th class="text-left py-4 px-6 font-medium text-gray-900">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        {% for req in requests %}
+                        <tr class="hover:bg-gray-50">
+                            <td class="py-4 px-6">
+                                <div class="font-medium text-gray-900">{{ req.employee.name }}</div>
+                            </td>
+                            <td class="py-4 px-6 text-gray-600">
+                                {{ req.created_at|date:"M d, Y" }}
+                                <div class="text-sm text-gray-500">{{ req.created_at|date:"g:i A" }}</div>
+                            </td>
+                            <td class="py-4 px-6">
+                                <div class="text-gray-900 max-w-xs">{{ req.reason|truncatewords:10 }}</div>
+                            </td>
+                            <td class="py-4 px-6">
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
+                                    {% if req.status == 'pending' %}bg-yellow-100 text-yellow-800
+                                    {% elif req.status == 'approved' %}bg-green-100 text-green-800
+                                    {% else %}bg-red-100 text-red-800{% endif %}">
+                                    {{ req.get_status_display }}
+                                </span>
+                            </td>
+                            <td class="py-4 px-6">
+                                {% if req.status == 'pending' %}
+                                    <div class="flex gap-2">
+                                        <a href="{% url 'approve_leave' req.pk %}" 
+                                           class="inline-flex items-center px-3 py-1 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 transition-colors">
+                                            Approve
+                                        </a>
+                                        <a href="{% url 'reject_leave' req.pk %}" 
+                                           class="inline-flex items-center px-3 py-1 bg-red-600 text-white text-sm font-medium rounded-md hover:bg-red-700 transition-colors">
+                                            Reject
+                                        </a>
+                                    </div>
+                                {% else %}
+                                    <span class="text-gray-400 text-sm">No actions</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-12">
+                <div class="text-gray-400 text-lg mb-2">No leave requests</div>
+                <p class="text-gray-500">There are no leave requests to review at this time.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
