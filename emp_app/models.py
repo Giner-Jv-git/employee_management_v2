@@ -76,13 +76,7 @@ class LeaveRequest(models.Model):
     def __str__(self):
         return f"Leave request for {self.employee.name}"
 
-class PaySlip(models.Model):
-    employee = models.ForeignKey(EmployeeData, on_delete=models.CASCADE)
-    period_start = models.DateField()
-    period_end = models.DateField()
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
-    issued_at = models.DateTimeField(auto_now_add=True)
-    notes = models.TextField(blank=True)
+
 
 class Attendance(models.Model):
     employee = models.ForeignKey(EmployeeData, on_delete=models.CASCADE)
