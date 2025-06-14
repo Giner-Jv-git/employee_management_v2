@@ -11,7 +11,7 @@ from django.utils import timezone
 from django.utils.crypto import get_random_string
 from datetime import timedelta
 from functools import wraps
-from .models import EmployeeData, LeaveRequest, PaySlip, Attendance
+from .models import EmployeeData, LeaveRequest, Attendance
 from .forms import EmployeeForm
 from django.contrib.auth.models import User
 
@@ -274,34 +274,14 @@ def reject_leave(request, pk):
     messages.success(request, "Leave rejected.")
     return redirect('leave_requests_admin')
 
-@employee_required
-def payslip_list(request):
-    payslips = PaySlip.objects.filter(employee=request.user.employee_profile).order_by('-issued_at')
-    return render(request, 'emp_app/employee/payslip_list.html', {'payslips': payslips})
+
 
 @employee_required
 def attendance_list(request):
     attendance = Attendance.objects.filter(employee=request.user.employee_profile).order_by('-date')
     return render(request, 'emp_app/employee/attendance_list.html', {'attendance': attendance})
 
-@admin_required
-def add_payslip(request, employee_id):
-    employee = EmployeeData.objects.get(pk=employee_id)
-    if request.method == 'POST':
-        period_start = request.POST['period_start']
-        period_end = request.POST['period_end']
-        amount = request.POST['amount']
-        notes = request.POST.get('notes', '')
-        PaySlip.objects.create(
-            employee=employee,
-            period_start=period_start,
-            period_end=period_end,
-            amount=amount,
-            notes=notes
-        )
-        messages.success(request, "Pay slip added!")
-        return redirect('admin_employee_detail', pk=employee_id)
-    return render(request, 'emp_app/admin/add_payslip.html', {'employee': employee})
+
 
 @admin_required
 def add_attendance(request, employee_id):
@@ -350,14 +330,7 @@ def attendance_management(request):
         'working_employees': working_employees,
         'absent_employees': absent_employees,
     })
-@admin_required
-def payslip_management(request):
-    employees = EmployeeData.objects.all()
-    recent_payslips = PaySlip.objects.select_related('employee').order_by('-issued_at')[:20]
-    return render(request, 'emp_app/admin/payslip_management.html', {
-        'employees': employees,
-        'recent_payslips': recent_payslips
-    })
+
 # Employee attendance view (for employees to clock in/out)
 @employee_required
 def employee_clock_attendance(request):  # New name to avoid conflicts
