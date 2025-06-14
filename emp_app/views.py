@@ -3,6 +3,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic import TemplateView, ListView, UpdateView, DeleteView, DetailView
+from django.views.generic.edit import DeleteView
 from django.contrib import messages
 from django.urls import reverse_lazy
 from django.db.models import Q
@@ -206,17 +207,15 @@ class EditEmployeeView(AdminRequiredMixin, UpdateView):
 
 class DeleteEmployeeView(AdminRequiredMixin, DeleteView):
     model = EmployeeData
-    success_url = reverse_lazy('view_table')
     template_name = 'emp_app/admin/confirm_delete.html'
+    success_url = reverse_lazy('view_table')
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['employee'] = self.get_object()
-        return context
-    
-    def form_valid(self, form):
-        response = super().form_valid(form)
-        messages.success(self.request, 'Employee deleted successfully!')
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        user = self.object.user
+        response = super().delete(request, *args, **kwargs)
+        user.delete()
+        messages.success(request, "Employee and user account deleted.")
         return response
 
 class AdminEmployeeDetailView(AdminRequiredMixin, DetailView):
