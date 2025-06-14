@@ -9,15 +9,15 @@
     <link href="{% static 'emp_app/css/output.css' %}" rel="stylesheet">
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
-<body class="flex">
+<body class="flex bg-gradient-to-b from-sky-50 to-blue-50 min-h-screen">
     {% include 'emp_app/includes/sidebar.html' %}
     {% include 'emp_app/includes/message.html' %}
     
-    <main class="flex-1 ml-64 p-6">
-        {% block content %}
-        {% endblock %}
+    <main class="flex-1 ml-64 overflow-auto">
+        <div class="p-6">
+            {% block content %}
+            {% endblock %}
+        </div>
     </main>
-
-    
 </body>
 </html>

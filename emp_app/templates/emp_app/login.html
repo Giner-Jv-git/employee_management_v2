@@ -32,15 +32,23 @@
                               focus:ring-blue-400 focus:border-blue-400"
                        required>
             </div>
-
-            <div>
+            <div class="relative">
                 <label for="password" class="block mb-1 text-sm font-medium text-blue-900">Password</label>
-                <input type="password" name="password" id="password"
-                       class="bg-blue-50 border border-blue-200 text-blue-900 rounded w-full p-2.5
-                              focus:ring-blue-400 focus:border-blue-400"
-                       required>
-            </div>
-
+                <div class="relative">
+                    <input 
+                    type="password" 
+                    name="password" 
+                    id="password"
+                    class="bg-blue-50 border border-blue-200 text-blue-900 rounded w-full p-2.5 pr-10focus:ring-blue-400 focus:border-blue-400"
+                    required>
+                    <button 
+                    type="button" 
+                    onclick="togglePasswordVisibility()" 
+                    class="absolute inset-y-0 right-0 flex items-center pr-3">
+            <span id="toggle-icon" class="text-blue-400 text-lg">👁️</span>
+        </button>
+    </div>
+</div>
             <button type="submit"
                     class="w-28 bg-yellow-400 text-blue-900 font-semibold rounded-4xl py-2
                            hover:bg-yellow-300 transition mx-auto block">
@@ -50,4 +58,5 @@
 
     </div>
 </div>
+<script src="{% static 'emp_app/js/toggle_icon.js' %}"></script>
 {% endblock content %}
