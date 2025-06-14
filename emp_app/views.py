@@ -71,12 +71,17 @@ def login_view(request):
         password = request.POST['password']
         user = authenticate(request, username=username, password=password)
         if user is not None:
-            login(request, user)
-            # Redirect based on user type
+            # Check if user is staff or has employee_profile
             if hasattr(user, 'employee_profile'):
+                login(request, user)
                 return redirect('employee_profile')
-            else:
+            elif user.is_staff or user.is_superuser:
+                login(request, user)
                 return redirect('admin_dashboard')
+            else:
+                # Not an employee or admin, deny access
+                messages.error(request, 'Account not active or not authorized.')
+                return render(request, 'emp_app/login.html')
         else:
             messages.error(request, 'Invalid username or password.')
     return render(request, 'emp_app/login.html')
@@ -321,11 +326,30 @@ def add_attendance(request, employee_id):
 
 @admin_required
 def attendance_management(request):
+    from django.utils import timezone
+    
+    today = timezone.now().date()
     employees = EmployeeData.objects.all()
     recent_attendance = Attendance.objects.select_related('employee').order_by('-date')[:20]
+    
+    # Get today's attendance for all employees
+    today_attendance = Attendance.objects.filter(date=today)
+    
+    # Add today's attendance to each employee
+    for employee in employees:
+        employee.today_attendance = today_attendance.filter(employee=employee).first()
+    
+    # Calculate statistics for the dashboard
+    working_employees = today_attendance.filter(time_out__isnull=True)
+    absent_employees = employees.exclude(
+        id__in=today_attendance.values_list('employee_id', flat=True)
+    )
+    
     return render(request, 'emp_app/admin/attendance_management.html', {
         'employees': employees,
-        'recent_attendance': recent_attendance
+        'recent_attendance': recent_attendance,
+        'working_employees': working_employees,
+        'absent_employees': absent_employees,
     })
 @admin_required
 def payslip_management(request):
