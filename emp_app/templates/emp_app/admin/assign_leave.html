@@ -197,49 +197,5 @@
     </div>
 </div>
 
-<script>
-// Calculate and display leave duration
-function calculateDuration() {
-    const startDate = document.getElementById('{{ form.start_date.id_for_label }}').value;
-    const endDate = document.getElementById('{{ form.end_date.id_for_label }}').value;
-    const durationDisplay = document.getElementById('duration-display');
-    const durationText = document.getElementById('duration-text');
-    
-    if (startDate && endDate) {
-        const start = new Date(startDate);
-        const end = new Date(endDate);
-        
-        if (end >= start) {
-            const timeDiff = end.getTime() - start.getTime();
-            const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24)) + 1; // +1 to include both start and end dates
-            
-            durationText.textContent = `${daysDiff} day${daysDiff !== 1 ? 's' : ''}`;
-            durationDisplay.classList.remove('hidden');
-        } else {
-            durationDisplay.classList.add('hidden');
-        }
-    } else {
-        durationDisplay.classList.add('hidden');
-    }
-}
-
-// Add event listeners for date inputs
-document.getElementById('{{ form.start_date.id_for_label }}').addEventListener('change', calculateDuration);
-document.getElementById('{{ form.end_date.id_for_label }}').addEventListener('change', calculateDuration);
-
-// Update end date minimum when start date changes
-document.getElementById('{{ form.start_date.id_for_label }}').addEventListener('change', function() {
-    const startDate = this.value;
-    const endDateInput = document.getElementById('{{ form.end_date.id_for_label }}');
-    endDateInput.min = startDate;
-    
-    // If end date is before start date, clear it
-    if (endDateInput.value && endDateInput.value < startDate) {
-        endDateInput.value = '';
-    }
-});
-
-// Calculate duration on page load if dates are present
-document.addEventListener('DOMContentLoaded', calculateDuration);
-</script>
+<script src="{% static 'emp_app/js/assignleavehtml.js' %}"></script>
 {% endblock %}
