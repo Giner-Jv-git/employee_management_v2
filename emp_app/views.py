@@ -402,6 +402,38 @@ def request_leave(request):
     
     return render(request, 'emp_app/employee/request_leave.html', context)
 
+@employee_required
+def leave_history(request):
+    employee = request.user.employee_profile
+    
+    # Get all leave requests for this employee
+    leave_requests = LeaveRequest.objects.filter(employee=employee).order_by('-created_at')
+    
+    # Get statistics
+    total_requests = leave_requests.count()
+    approved_requests = leave_requests.filter(status='approved')
+    pending_requests = leave_requests.filter(status='pending')
+    rejected_requests = leave_requests.filter(status='rejected')
+    
+    # Calculate total approved days this year
+    current_year = timezone.now().year
+    approved_days_this_year = sum([
+        lr.duration_days for lr in approved_requests 
+        if lr.start_date.year == current_year
+    ])
+    
+    context = {
+        'leave_requests': leave_requests,
+        'total_requests': total_requests,
+        'approved_requests': approved_requests,
+        'pending_requests': pending_requests,
+        'rejected_requests': rejected_requests,
+        'approved_days_this_year': approved_days_this_year,
+        'employee': employee
+    }
+    
+    return render(request, 'emp_app/employee/leave_history.html', context)
+
 @admin_required
 def leave_requests_admin(request):
     # Filter options

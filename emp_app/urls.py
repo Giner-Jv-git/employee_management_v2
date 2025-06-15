@@ -35,12 +35,14 @@ urlpatterns = [
     
     # Employee clock in/out
     path('employee/clock-attendance/', views.employee_clock_attendance, name='employee_clock_attendance'),
+    path('leave-history/', views.leave_history, name='leave_history'),
+
     # admin actions on employee data
     path('employees/<int:employee_id>/add-attendance/', add_attendance, name='add_attendance'),
     path('leave-requests/', leave_requests_admin, name='leave_requests_admin'),
     path('leave/<int:pk>/approve/', approve_leave, name='approve_leave'),
     path('leave/<int:pk>/reject/', reject_leave, name='reject_leave'),
     
-    # ADD A GENERAL LEAVE REQUEST URL (to fix sidebar if needed)
+  
     
 ]
