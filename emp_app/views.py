@@ -102,9 +102,35 @@ class AdminDashboardView(AdminRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['total_employees'] = EmployeeData.objects.count()
-        context['active_employees'] = EmployeeData.objects.filter(status='active').count()
-        context['inactive_employees'] = EmployeeData.objects.filter(status='inactive').count()
+        today = timezone.now().date()
+        
+        # Get all employees with their leave requests
+        all_employees = EmployeeData.objects.prefetch_related('leave_requests').all()
+        
+        # Count different employee states
+        total_employees = all_employees.count()
+        inactive_employees = all_employees.filter(status='inactive').count()
+        
+        # For active employees, check if they're currently on leave
+        active_employees_available = 0
+        employees_on_leave = 0
+        
+        for employee in all_employees.filter(status='active'):
+            # Check if employee is currently on approved leave
+            current_leave = employee.leave_requests.filter(
+                status='approved',
+                start_date__lte=today,
+                end_date__gte=today
+            ).first()
+            
+            if current_leave:
+                employees_on_leave += 1
+            else:
+                active_employees_available += 1
+        
+        context['total_employees'] = total_employees
+        context['active_employees'] = active_employees_available  # Actually available employees
+        context['inactive_employees'] = employees_on_leave  # Employees currently on leave
         
         # Recent updates (last 30 days)
         thirty_days_ago = timezone.now() - timedelta(days=30)
@@ -112,8 +138,35 @@ class AdminDashboardView(AdminRequiredMixin, TemplateView):
             updated_at__gte=thirty_days_ago
         ).count()
         
-        # Recently modified employees (last 5 changes)
-        context['recent_employees'] = EmployeeData.objects.all().order_by('-updated_at')[:5]
+        # Recently modified employees with enhanced leave status (last 5 changes)
+        recent_employees = EmployeeData.objects.prefetch_related('leave_requests').order_by('-updated_at')[:5]
+        
+        # Add leave status to each recent employee
+        for employee in recent_employees:
+            # Check if employee is currently on approved leave
+            current_leave = employee.leave_requests.filter(
+                status='approved',
+                start_date__lte=today,
+                end_date__gte=today
+            ).first()
+            
+            employee.current_leave = current_leave
+            employee.is_on_leave = current_leave is not None
+            
+            # Get pending leave requests count
+            employee.pending_leaves = employee.leave_requests.filter(status='pending').count()
+            
+            # Get total approved leave days this year
+            current_year = timezone.now().year
+            approved_leaves_this_year = employee.leave_requests.filter(
+                status='approved',
+                start_date__year=current_year
+            )
+            employee.total_leave_days_this_year = sum([
+                leave.duration_days for leave in approved_leaves_this_year
+            ])
+        
+        context['recent_employees'] = recent_employees
         
         # Pie chart data
         position_labels = [label for _, label in EmployeeData.POSITION_CHOICES]
@@ -123,6 +176,18 @@ class AdminDashboardView(AdminRequiredMixin, TemplateView):
         ]
         context['position_labels'] = position_labels
         context['position_counts'] = position_counts
+        
+        # Add additional context for better dashboard insights
+        context['employees_on_leave_count'] = employees_on_leave
+        context['truly_inactive_count'] = inactive_employees
+        
+        # Additional statistics for enhanced dashboard
+        context['total_pending_leaves'] = LeaveRequest.objects.filter(status='pending').count()
+        context['leaves_approved_this_month'] = LeaveRequest.objects.filter(
+            status='approved',
+            approved_at__gte=timezone.now().replace(day=1)
+        ).count()
+        
         return context
 
 @admin_required

@@ -6,7 +6,7 @@
     <!-- Header with Beach Theme -->
     <div class="text-center mb-8">
         <img src="{% static 'emp_app/img/Typography black.png' %}" alt="Oceancrest Logo" class="h-24 mx-auto mb-4">
-        <h1 class="text-3xl font-bold text-teal-800 mb-2">🏖️ Welcome to Beachside Admin</h1>
+        <h1 class="text-3xl font-bold text-teal-800 mb-2">🏖️ Welcome to Beachside View</h1>
         <p class="text-lg text-teal-600">Ride the waves of your workforce analytics</p>
         <div class="mt-4 flex justify-center space-x-4">
             <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">🌊 Ocean View</span>
@@ -15,8 +15,8 @@
         </div>
     </div>
 
-    <!-- Beach-themed Stats Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+    <!-- Enhanced Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
         <!-- Total Employees - Ocean Wave -->
         <div class="bg-gradient-to-r from-blue-400 to-cyan-400 p-6 rounded-2xl shadow-lg relative overflow-hidden">
             <div class="absolute -bottom-4 -right-4 opacity-20">
@@ -28,13 +28,13 @@
                 </svg>
             </div>
             <div class="relative z-10 text-white">
-                <h3 class="text-blue-100 text-sm font-medium mb-1">🌊 Total Crew Members</h3>
+                <h3 class="text-blue-100 text-sm font-medium mb-1">🌊 Total Crew</h3>
                 <p class="text-3xl font-bold mb-2">{{ total_employees }}</p>
-                <p class="text-xs text-blue-100">Sailing with us</p>
+                <p class="text-xs text-blue-100">All team members</p>
             </div>
         </div>
         
-        <!-- Active Employees - Palm Tree -->
+        <!-- Available Employees - Palm Tree -->
         <div class="bg-gradient-to-r from-emerald-400 to-teal-400 p-6 rounded-2xl shadow-lg relative overflow-hidden">
             <div class="absolute -bottom-4 -right-4 opacity-20">
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -45,14 +45,30 @@
                 </svg>
             </div>
             <div class="relative z-10 text-white">
-                <h3 class="text-emerald-100 text-sm font-medium mb-1">🌴 Active Beach Staff</h3>
+                <h3 class="text-emerald-100 text-sm font-medium mb-1">🌴 Available Now</h3>
                 <p class="text-3xl font-bold mb-2">{{ active_employees }}</p>
-                <p class="text-xs text-emerald-100">On duty today</p>
+                <p class="text-xs text-emerald-100">Ready for duty</p>
             </div>
         </div>
         
+        <!-- On Leave - Beach Umbrella -->
+        <div class="bg-gradient-to-r from-amber-400 to-orange-400 p-6 rounded-2xl shadow-lg relative overflow-hidden">
+            <div class="absolute -bottom-4 -right-4 opacity-20">
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 12a10.06 10.06 0 0 0-20 0Z"></path>
+                    <path d="M12 12v8a2 2 0 0 0 4 0"></path>
+                    <path d="M12 2v2"></path>
+                </svg>
+            </div>
+            <div class="relative z-10 text-white">
+                <h3 class="text-amber-100 text-sm font-medium mb-1">🏖️ On Leave</h3>
+                <p class="text-3xl font-bold mb-2">{{ inactive_employees }}</p>
+                <p class="text-xs text-amber-100">Taking a break</p>
+            </div>
+        </div>
+
         <!-- Recent Updates - Sunset -->
-        <div class="bg-gradient-to-r from-orange-400 to-amber-400 p-6 rounded-2xl shadow-lg relative overflow-hidden">
+        <div class="bg-gradient-to-r from-purple-400 to-pink-400 p-6 rounded-2xl shadow-lg relative overflow-hidden">
             <div class="absolute -bottom-4 -right-4 opacity-20">
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="5"></circle>
@@ -67,9 +83,9 @@
                 </svg>
             </div>
             <div class="relative z-10 text-white">
-                <h3 class="text-orange-100 text-sm font-medium mb-1">🌅 Recent Updates</h3>
+                <h3 class="text-purple-100 text-sm font-medium mb-1">🌅 Recent Updates</h3>
                 <p class="text-3xl font-bold mb-2">{{ recent_updates }}</p>
-                <p class="text-xs text-orange-100">Last 7 days</p>
+                <p class="text-xs text-purple-100">Last 30 days</p>
             </div>
         </div>
     </div>
@@ -84,8 +100,8 @@
             <div class="relative z-10">
                 <div class="flex items-center justify-between mb-6">
                     <div>
-                        <h3 class="text-xl font-bold text-teal-800 mb-1">🌊 Crew Status Waves</h3>
-                        <p class="text-sm text-teal-600">Current workforce tide levels</p>
+                        <h3 class="text-xl font-bold text-teal-800 mb-1">🌊 Crew Availability</h3>
+                        <p class="text-sm text-teal-600">Current workforce status</p>
                     </div>
                     <div class="flex items-center justify-center w-12 h-12 bg-blue-100/30 rounded-full backdrop-blur-sm">
                         <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -109,11 +125,11 @@
                 <div class="flex justify-center space-x-6">
                     <div class="flex items-center">
                         <div class="w-4 h-4 bg-teal-400 rounded-full mr-2"></div>
-                        <span class="text-sm font-medium text-teal-700">Active Crew</span>
+                        <span class="text-sm font-medium text-teal-700">Available ({{ active_employees }})</span>
                     </div>
                     <div class="flex items-center">
                         <div class="w-4 h-4 bg-amber-400 rounded-full mr-2"></div>
-                        <span class="text-sm font-medium text-gray-700">On Leave</span>
+                        <span class="text-sm font-medium text-gray-700">On Leave ({{ inactive_employees }})</span>
                     </div>
                 </div>
             </div>
@@ -187,7 +203,7 @@
         </div>
     </div>
 
-    <!-- Recently Modified Employees - Beach Table -->
+    <!-- Enhanced Recent Activity Section -->
     <div class="bg-white/90 backdrop-blur-sm p-6 rounded-2xl shadow-lg border border-blue-100 mb-8 relative overflow-hidden">
         <div class="absolute top-0 right-0 w-24 h-24 bg-blue-100/10 rounded-full -mr-6 -mt-6"></div>
         <div class="absolute bottom-0 left-0 w-24 h-24 bg-teal-100/10 rounded-full -ml-6 -mb-6"></div>
@@ -196,7 +212,7 @@
             <div class="flex justify-between items-center mb-4">
                 <div>
                     <h2 class="text-xl font-bold text-teal-800">🏄‍♂️ Recent Crew Activity</h2>
-                    <p class="text-teal-600 text-sm">Latest changes in your beach team</p>
+                    <p class="text-teal-600 text-sm">Latest updates and leave status changes</p>
                 </div>
                 <a href="{% url 'view_table' %}" class="text-blue-600 text-sm font-medium hover:text-blue-800 flex items-center">
                     View All Crew <span class="ml-1">→</span>
@@ -207,10 +223,11 @@
                 <table class="min-w-full divide-y divide-blue-200">
                     <thead class="bg-blue-50/50">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">Beach Crew</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">Crew Member</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">ID</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">Position</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">Current Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">Leave Info</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">Last Update</th>
                         </tr>
                     </thead>
@@ -241,19 +258,46 @@
                                 {{ employee.position }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                            {% if employee.status == 'active' %}bg-emerald-100 text-emerald-800
-                                            {% else %}bg-amber-100 text-amber-800{% endif %}">
-                                    {{ employee.get_status_display }}
+                                {% if employee.is_on_leave %}
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-amber-100 text-amber-800">
+                                    🏖️ On Leave
                                 </span>
+                                {% elif employee.status == 'active' %}
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-emerald-100 text-emerald-800">
+                                    ✅ Available
+                                </span>
+                                {% else %}
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                                    ❌ Inactive
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-xs text-teal-600">
+                                {% if employee.is_on_leave %}
+                                    <div class="text-amber-700 font-medium">
+                                        Until {{ employee.current_leave.end_date|date:"M d" }}
+                                    </div>
+                                    <div class="text-gray-500">
+                                        {{ employee.current_leave.leave_type }}
+                                    </div>
+                                {% elif employee.pending_leaves > 0 %}
+                                    <div class="text-blue-700">
+                                        {{ employee.pending_leaves }} pending request{{ employee.pending_leaves|pluralize }}
+                                    </div>
+                                {% else %}
+                                    <div class="text-gray-400">
+                                        No pending leave
+                                    </div>
+                                {% endif %}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-teal-600">
-                                {{ employee.updated_at|date:"M d, Y H:i" }}
+                                {{ employee.updated_at|date:"M d, Y" }}
+                                <div class="text-xs text-gray-500">{{ employee.updated_at|date:"H:i" }}</div>
                             </td>
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="5" class="px-6 py-4 text-center text-sm text-teal-500">
+                            <td colspan="6" class="px-6 py-4 text-center text-sm text-teal-500">
                                 🏖️ No recent beach crew activity found
                             </td>
                         </tr>
