@@ -1,146 +1,334 @@
 {% extends 'emp_app/base.html' %}
 {% load static %}
-{% block 'title' %}Beach Crew{% endblock 'title' %}
 
 {% block content %}
-<div class="container mx-auto px-4">
-    <h1 class="text-3xl font-bold mb-6 text-teal-800">🏖️ Beach Crew Management</h1>
-    
-    <!-- Search and Filter Form - Beach Theme -->
-    <div class="mb-6 bg-white/90 backdrop-blur-sm p-4 rounded-xl shadow-lg border border-blue-100">
-        <form method="get" class="flex flex-wrap gap-4 items-end">
-            <div class="flex-1 min-w-[200px]">
-                <label for="search" class="block text-sm font-medium text-teal-700">🔍 Search Crew</label>
-                <input type="text" name="search" id="search" 
-                       value="{{ search_query }}"
-                       placeholder="Search by name, ID or phone"
-                       class="mt-1 block w-full px-3 py-2 border border-blue-200 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-300 focus:border-blue-400">
-            </div>
-            
-            <div class="min-w-[180px]">
-                <label for="status" class="block text-sm font-medium text-teal-700">🌊 Status</label>
-                <select name="status" id="status" class="mt-1 block w-full px-3 py-2 border border-blue-200 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-300 focus:border-blue-400">
-                    <option value="">All Status</option>
-                    <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active</option>
-                    <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>On Leave</option>
-                </select>
-            </div>
-            
-            <button type="submit" class="px-4 py-2 bg-gradient-to-r from-blue-500 to-teal-500 text-white rounded-lg shadow hover:from-blue-600 hover:to-teal-600 transition-colors flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-                Filter
-            </button>
-        </form>
-    </div>
-    
-    <!-- Employees Table - Beach Theme -->
-    <div class="bg-white/90 backdrop-blur-sm shadow-lg overflow-hidden rounded-xl border border-blue-100">
-        <table class="min-w-full divide-y divide-blue-200">
-            <thead class="bg-blue-50/50">
-                <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">Beach Crew</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">ID</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">Phone</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">Position</th> 
-                    <th class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">Status</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">Last Update</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">Actions</th>
-                </tr>
-            </thead>
-            <tbody class="bg-white/50 divide-y divide-blue-100/50">
-                {% for employee in employees %}
-                <tr class="hover:bg-blue-50/30 cursor-pointer transition-colors duration-150" onclick="window.location='{% url 'admin_employee_detail' employee.pk %}'">
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="flex items-center">
-                            {% if employee.profile_picture %}
-                            <div class="flex-shrink-0 h-10 w-10">
-                                <img class="h-10 w-10 rounded-full border-2 border-blue-200 object-cover" src="{{ employee.profile_picture.url }}" alt="">
-                            </div>
-                            {% else %}
-                            <div class="flex-shrink-0 h-10 w-10 rounded-full bg-gradient-to-r from-blue-400 to-teal-400 flex items-center justify-center text-white font-bold">
-                                {{ employee.name|first|upper }}
-                            </div>
-                            {% endif %}
-                            <div class="ml-4">
-                                <div class="text-sm font-medium text-teal-800">{{ employee.name }}</div>
-                                <div class="text-xs text-teal-600">Age: {{ employee.age }}</div>
-                            </div>
-                        </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-teal-600">
-                        {{ employee.employee_id }}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-teal-600">
-                        {{ employee.phone_number }}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-teal-600">
-                        {{ employee.get_position_display }}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                    {% if employee.status == 'active' %}bg-emerald-100 text-emerald-800
-                                    {% else %}bg-amber-100 text-amber-800{% endif %}">
-                            {{ employee.get_status_display }}
-                        </span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-teal-600">
-                        {{ employee.updated_at|date:"M d, Y H:i" }}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                        <a href="{% url 'edit_employee' employee.pk %}" class="text-blue-600 hover:text-blue-800" onclick="event.stopPropagation()">✏️ Edit</a>
-                        <a href="{% url 'delete_employee' employee.pk %}" class="text-red-600 hover:text-red-800" onclick="event.stopPropagation(); confirmDelete('{{ employee.pk }}','{{ employee.name }}')">🗑️ Delete</a>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="7" class="px-6 py-4 text-center text-sm text-teal-500">
-                        🏝️ No beach crew members found
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+<div class="min-h-screen bg-gradient-to-br from-cyan-100 via-blue-50 to-teal-100 relative overflow-hidden">
+    <!-- Beach Wave Background -->
+    <div class="absolute inset-0">
+        <svg class="absolute bottom-0 w-full h-32 text-cyan-200 opacity-30" preserveAspectRatio="none" viewBox="0 0 1200 120" fill="currentColor">
+            <path d="M0,0 C300,40 600,80 900,60 C1050,50 1150,30 1200,20 L1200,120 L0,120 Z"/>
+        </svg>
+        <svg class="absolute bottom-0 w-full h-24 text-teal-300 opacity-40" preserveAspectRatio="none" viewBox="0 0 1200 120" fill="currentColor">
+            <path d="M0,40 C300,70 600,100 900,80 C1050,70 1150,50 1200,40 L1200,120 L0,120 Z"/>
+        </svg>
     </div>
 
-    <!-- Pagination - Beach Theme -->
-    {% if is_paginated %}
-    <div class="mt-6 flex justify-center">
-        <nav class="relative z-0 inline-flex rounded-lg shadow-sm -space-x-px" aria-label="Pagination">
-            {% if page_obj.has_previous %}
-            <a href="?page=1&search={{ search_query }}&status={{ status_filter }}" 
-               class="relative inline-flex items-center px-3 py-2 rounded-l-lg border border-blue-200 bg-white text-sm font-medium text-teal-600 hover:bg-blue-50 transition-colors">
-                <span class="sr-only">First</span>
-                &laquo;&laquo;
+    <div class="container mx-auto px-4 py-8 relative z-10">
+        <!-- Header -->
+        <div class="text-center mb-10">
+            <div class="flex justify-center items-center mb-4">
+                <div class="bg-gradient-to-r from-cyan-400 to-teal-500 rounded-full p-4 shadow-lg">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                    </svg>
+                </div>
+            </div>
+            <h1 class="text-4xl font-bold bg-gradient-to-r from-teal-600 to-cyan-600 bg-clip-text text-transparent mb-3">
+                👥 Employee Directory 🌊
+            </h1>
+            <p class="text-teal-700 text-lg">Manage your amazing team members</p>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="flex flex-wrap gap-4 mb-8">
+            <a href="{% url 'add_employee' %}" class="bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-600 hover:to-cyan-700 text-white font-bold py-3 px-6 rounded-2xl shadow-lg transform transition-all duration-300 hover:scale-105 flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+                Add Employee
             </a>
-            <a href="?page={{ page_obj.previous_page_number }}&search={{ search_query }}&status={{ status_filter }}" 
-               class="relative inline-flex items-center px-3 py-2 border border-blue-200 bg-white text-sm font-medium text-teal-600 hover:bg-blue-50 transition-colors">
-                <span class="sr-only">Previous</span>
-                &laquo;
-            </a>
-            {% endif %}
             
-            <span class="relative inline-flex items-center px-4 py-2 border border-blue-200 bg-blue-50 text-sm font-medium text-teal-800">
-                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
-            </span>
+            <a href="{% url 'leave_requests_admin' %}" class="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-bold py-3 px-6 rounded-2xl shadow-lg transform transition-all duration-300 hover:scale-105 flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3a1 1 0 011-1h6a1 1 0 011 1v4m-6 0h6M3 7h18M5 7v13a2 2 0 002 2h10a2 2 0 002-2V7M9 11v6m6-6v6"></path>
+                </svg>
+                Manage Leave Requests
+            </a>
             
-            {% if page_obj.has_next %}
-            <a href="?page={{ page_obj.next_page_number }}&search={{ search_query }}&status={{ status_filter }}" 
-               class="relative inline-flex items-center px-3 py-2 border border-blue-200 bg-white text-sm font-medium text-teal-600 hover:bg-blue-50 transition-colors">
-                <span class="sr-only">Next</span>
-                &raquo;
+            <a href="{% url 'assign_leave' %}" class="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-bold py-3 px-6 rounded-2xl shadow-lg transform transition-all duration-300 hover:scale-105 flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+                Assign Leave
             </a>
-            <a href="?page={{ page_obj.paginator.num_pages }}&search={{ search_query }}&status={{ status_filter }}" 
-               class="relative inline-flex items-center px-3 py-2 rounded-r-lg border border-blue-200 bg-white text-sm font-medium text-teal-600 hover:bg-blue-50 transition-colors">
-                <span class="sr-only">Last</span>
-                &raquo;&raquo;
-            </a>
+        </div>
+
+        <!-- Search and Filter Section -->
+        <div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-cyan-200 p-6 mb-8">
+            <form method="get" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Search Employees</label>
+                    <input type="text" name="search" value="{{ search_query }}" 
+                           placeholder="Search by name, ID, phone, or address..." 
+                           class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Employment Status</label>
+                    <select name="status" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-cyan-500">
+                        <option value="">All Status</option>
+                        <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active</option>
+                        <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>Inactive</option>
+                    </select>
+                </div>
+                
+                <div class="flex items-end">
+                    <button type="submit" class="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold py-3 px-4 rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-300">
+                        <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                        Search & Filter
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Employee Table -->
+        <div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-2xl border border-cyan-200 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gradient-to-r from-cyan-500 to-teal-600">
+                        <tr>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">Employee</th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">Contact</th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">Position</th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">Leave Status</th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">Leave Days ({{ today.year }})</th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">Status</th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for employee in employees %}
+                        <tr class="hover:bg-gray-50 transition-colors duration-200 cursor-pointer {% if employee.is_on_leave %}bg-yellow-50{% endif %}" 
+                            onclick="window.location.href='{% url 'employee_detail' employee.pk %}'">
+                            
+                            <!-- Employee Info -->
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    {% if employee.profile_picture %}
+                                        <img class="h-12 w-12 rounded-full object-cover border-2 {% if employee.is_on_leave %}border-yellow-400{% else %}border-gray-300{% endif %}" src="{{ employee.profile_picture.url }}" alt="{{ employee.name }}">
+                                    {% else %}
+                                        <div class="h-12 w-12 rounded-full bg-gradient-to-r from-cyan-400 to-teal-500 flex items-center justify-center {% if employee.is_on_leave %}ring-2 ring-yellow-400{% endif %}">
+                                            <span class="text-white font-bold text-lg">{{ employee.name|first }}</span>
+                                        </div>
+                                    {% endif %}
+                                    <div class="ml-4">
+                                        <div class="text-sm font-medium text-gray-900 flex items-center">
+                                            {{ employee.name }}
+                                            {% if employee.is_on_leave %}
+                                                <span class="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                                    🏖️ On Leave
+                                                </span>
+                                            {% endif %}
+                                        </div>
+                                        <div class="text-sm text-gray-500">ID: {{ employee.employee_id }}</div>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <!-- Contact -->
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900">{{ employee.phone_number }}</div>
+                                <div class="text-sm text-gray-500">Age: {{ employee.age }}</div>
+                            </td>
+
+                            <!-- Position -->
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-medium text-gray-900">{{ employee.position }}</div>
+                                <div class="text-sm text-gray-500">₱{{ employee.salary|floatformat:0 }}</div>
+                            </td>
+
+                            <!-- Leave Status -->
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                {% if employee.is_on_leave %}
+                                    <div class="bg-yellow-100 border border-yellow-300 rounded-lg p-2">
+                                        <div class="text-xs font-semibold text-yellow-800">Currently on {{ employee.current_leave.get_leave_type_display }}</div>
+                                        <div class="text-xs text-yellow-600">
+                                            {{ employee.current_leave.start_date }} - {{ employee.current_leave.end_date }}
+                                        </div>
+                                        <div class="text-xs text-yellow-500 mt-1">
+                                            {{ employee.current_leave.reason|truncatechars:30 }}
+                                        </div>
+                                    </div>
+                                {% elif employee.pending_leaves > 0 %}
+                                    <div class="bg-blue-100 border border-blue-300 rounded-lg p-2">
+                                        <div class="text-xs font-semibold text-blue-800">
+                                            {{ employee.pending_leaves }} Pending Request{{ employee.pending_leaves|pluralize }}
+                                        </div>
+                                        <a href="{% url 'leave_requests_admin' %}?employee={{ employee.id }}" class="text-xs text-blue-600 hover:text-blue-800" onclick="event.stopPropagation()">
+                                            Review →
+                                        </a>
+                                    </div>
+                                {% else %}
+                                    <div class="bg-green-100 border border-green-300 rounded-lg p-2">
+                                        <div class="text-xs font-semibold text-green-800">Available</div>
+                                        <div class="text-xs text-green-600">No pending leave</div>
+                                    </div>
+                                {% endif %}
+                            </td>
+
+                            <!-- Leave Days This Year -->
+                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                <div class="text-lg font-bold text-gray-900">{{ employee.total_leave_days_this_year }}</div>
+                                <div class="text-xs text-gray-500">days used</div>
+                                {% if employee.total_leave_days_this_year > 15 %}
+                                    <div class="text-xs text-red-500">⚠️ High usage</div>
+                                {% elif employee.total_leave_days_this_year > 10 %}
+                                    <div class="text-xs text-yellow-500">📊 Moderate</div>
+                                {% else %}
+                                    <div class="text-xs text-green-500">✅ Low usage</div>
+                                {% endif %}
+                            </td>
+
+                            <!-- Employment Status -->
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                {% if employee.is_on_leave %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                        On Leave
+                                    </span>
+                                {% else %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                        {% if employee.status == 'active' %}bg-green-100 text-green-800
+                                        {% elif employee.status == 'inactive' %}bg-red-100 text-red-800
+                                        {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                        {{ employee.get_status_display }}
+                                    </span>
+                                {% endif %}
+                            </td>
+
+                            <!-- Actions -->
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <div class="flex space-x-2">
+                                    <a href="{% url 'edit_employee' employee.pk %}" 
+                                       class="bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1 rounded-lg text-xs transition-colors duration-200" 
+                                       onclick="event.stopPropagation()">
+                                        Edit
+                                    </a>
+                                    
+                                    <!-- Quick assign leave button -->
+                                    <a href="{% url 'assign_leave' %}?employee={{ employee.id }}" 
+                                       class="bg-purple-100 hover:bg-purple-200 text-purple-700 px-3 py-1 rounded-lg text-xs transition-colors duration-200" 
+                                       onclick="event.stopPropagation()">
+                                        Assign Leave
+                                    </a>
+                                    
+                                    <a href="{% url 'delete_employee' employee.pk %}" 
+                                       class="bg-red-100 hover:bg-red-200 text-red-700 px-3 py-1 rounded-lg text-xs transition-colors duration-200" 
+                                       onclick="if(confirm('Are you sure you want to delete this employee?')) { event.stopPropagation(); return true; } else { event.stopPropagation(); return false; }">
+                                        Delete
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="px-6 py-8 text-center">
+                                <div class="text-gray-500">
+                                    <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                    </svg>
+                                    <p class="text-lg font-medium">No employees found</p>
+                                    <p class="text-sm">
+                                        {% if search_query or status_filter %}
+                                            Try adjusting your search or filter criteria.
+                                        {% else %}
+                                            Start by adding your first team member!
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if is_paginated %}
+            <div class="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 rounded-b-2xl">
+                <div class="flex flex-1 justify-between sm:hidden">
+                    {% if page_obj.has_previous %}
+                        <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}" 
+                           class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+                            Previous
+                        </a>
+                    {% endif %}
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}" 
+                           class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+                            Next
+                        </a>
+                    {% endif %}
+                </div>
+                
+                <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+                    <div>
+                        <p class="text-sm text-gray-700">
+                            Showing <span class="font-medium">{{ page_obj.start_index }}</span> to <span class="font-medium">{{ page_obj.end_index }}</span> of <span class="font-medium">{{ paginator.count }}</span> results
+                        </p>
+                    </div>
+                    
+                    <div>
+                        <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+                            {% if page_obj.has_previous %}
+                                <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}" 
+                                   class="relative inline-flex items-center rounded-l-md border border-gray-300 bg-white px-2 py-2 text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                    First
+                                </a>
+                                <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}" 
+                                   class="relative inline-flex items-center border border-gray-300 bg-white px-2 py-2 text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                    Previous
+                                </a>
+                            {% endif %}
+                            
+                            <span class="relative z-10 inline-flex items-center border border-cyan-500 bg-cyan-50 px-4 py-2 text-sm font-medium text-cyan-600">
+                                Page {{ page_obj.number }} of {{ paginator.num_pages }}
+                            </span>
+                            
+                            {% if page_obj.has_next %}
+                                <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}" 
+                                   class="relative inline-flex items-center border border-gray-300 bg-white px-2 py-2 text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                    Next
+                                </a>
+                                <a href="?page={{ paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}" 
+                                   class="relative inline-flex items-center rounded-r-md border border-gray-300 bg-white px-2 py-2 text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                    Last
+                                </a>
+                            {% endif %}
+                        </nav>
+                    </div>
+                </div>
+            </div>
             {% endif %}
-        </nav>
+        </div>
+
+        <!-- Summary Stats -->
+        <div class="mt-8 grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-cyan-200 p-6 text-center">
+                <div class="text-2xl font-bold text-gray-900">{{ summary_stats.total_employees }}</div>
+                <div class="text-sm text-gray-600">Total Employees</div>
+            </div>
+            
+            <div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-cyan-200 p-6 text-center">
+                <div class="text-2xl font-bold text-yellow-600">{{ summary_stats.employees_on_leave }}</div>
+                <div class="text-sm text-gray-600">Currently on Leave</div>
+            </div>
+            
+            <div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-cyan-200 p-6 text-center">
+                <div class="text-2xl font-bold text-blue-600">{{ summary_stats.employees_with_pending }}</div>
+                <div class="text-sm text-gray-600">Have Pending Requests</div>
+            </div>
+            
+            <div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-cyan-200 p-6 text-center">
+                <div class="text-2xl font-bold text-green-600">{{ summary_stats.employees_available }}</div>
+                <div class="text-sm text-gray-600">Available</div>
+            </div>
+        </div>
     </div>
-    {% endif %}
 </div>
+
+
 
 <script src="{% static 'emp_app/js/imagepreview.js' %}"></script>
 {% endblock %}

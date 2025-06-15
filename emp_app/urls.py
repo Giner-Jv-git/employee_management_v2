@@ -2,7 +2,7 @@ from django.urls import path
 from . import views
 from django.contrib.auth.views import LogoutView
 from .views import (
-     EditEmployeeView, DeleteEmployeeView, AdminEmployeeDetailView,
+     EditEmployeeView, DeleteEmployeeView, EmployeeDetailView,
     add_employee, employee_profile, request_leave, approve_leave,
     attendance_list,
     add_attendance,
@@ -23,7 +23,7 @@ urlpatterns = [
     path('employees/edit/<int:pk>/', EditEmployeeView.as_view(), name='edit_employee'),
     path('employees/delete/<int:pk>/', DeleteEmployeeView.as_view(), name='delete_employee'),
     path('employees/', views.EmployeeTableView.as_view(), name='view_table'),
-    path('employees/<int:pk>/', AdminEmployeeDetailView.as_view(), name='admin_employee_detail'),
+    path('employee/<int:pk>/', views.EmployeeDetailView.as_view(), name='employee_detail'),
     
     path('attendance-management/', views.attendance_management, name='attendance_management'),
     path('assign-leave/', views.assign_leave, name='assign_leave'),

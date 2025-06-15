@@ -164,12 +164,12 @@ class EmployeeTableView(AdminRequiredMixin, ListView):
     template_name = 'emp_app/admin/view_table.html'
     context_object_name = 'employees'
     paginate_by = 10
-
     def get_queryset(self):
+        from django.utils import timezone
+        
         queryset = super().get_queryset()
         search_query = self.request.GET.get('search', '')
         status_filter = self.request.GET.get('status', '')
-
         if search_query:
             queryset = queryset.filter(
                 Q(name__icontains=search_query) |
@@ -177,16 +177,76 @@ class EmployeeTableView(AdminRequiredMixin, ListView):
                 Q(phone_number__icontains=search_query) |
                 Q(address__icontains=search_query)
             )
-
         if status_filter:
             queryset = queryset.filter(status=status_filter)
-
+        # Prefetch leave requests for better performance
+        queryset = queryset.prefetch_related('leave_requests')
+        
         return queryset.order_by('-created_at')
-
     def get_context_data(self, **kwargs):
+        from django.utils import timezone
+        
         context = super().get_context_data(**kwargs)
         context['search_query'] = self.request.GET.get('search', '')
         context['status_filter'] = self.request.GET.get('status', '')
+        context['today'] = timezone.now().date()
+        
+        # Add leave status to each employee in the current page
+        today = timezone.now().date()
+        current_year = timezone.now().year
+        
+        for employee in context['employees']:
+            # Check if employee is currently on leave
+            current_leave = employee.leave_requests.filter(
+                status='approved',
+                start_date__lte=today,
+                end_date__gte=today
+            ).first()
+            
+            employee.current_leave = current_leave
+            employee.is_on_leave = current_leave is not None
+            
+            # Get pending leave requests count
+            employee.pending_leaves = employee.leave_requests.filter(status='pending').count()
+            
+            # Get total approved leave days this year
+            approved_leaves_this_year = employee.leave_requests.filter(
+                status='approved',
+                start_date__year=current_year
+            )
+            employee.total_leave_days_this_year = sum([
+                leave.duration_days for leave in approved_leaves_this_year
+            ])
+        
+        # Add summary statistics for all employees (not just current page)
+        all_employees = EmployeeData.objects.prefetch_related('leave_requests').all()
+        employees_on_leave = 0
+        employees_with_pending = 0
+        employees_available = 0
+        
+        for emp in all_employees:
+            current_leave = emp.leave_requests.filter(
+                status='approved',
+                start_date__lte=today,
+                end_date__gte=today
+            ).first()
+            
+            pending_count = emp.leave_requests.filter(status='pending').count()
+            
+            if current_leave:
+                employees_on_leave += 1
+            elif pending_count > 0:
+                employees_with_pending += 1
+            else:
+                employees_available += 1
+        
+        context['summary_stats'] = {
+            'total_employees': all_employees.count(),
+            'employees_on_leave': employees_on_leave,
+            'employees_with_pending': employees_with_pending,
+            'employees_available': employees_available,
+        }
+        
         return context
 
 class EditEmployeeView(AdminRequiredMixin, UpdateView):
@@ -216,7 +276,7 @@ class DeleteEmployeeView(AdminRequiredMixin, DeleteView):
         messages.success(request, "Employee and user account deleted.")
         return response
 
-class AdminEmployeeDetailView(AdminRequiredMixin, DetailView):
+class EmployeeDetailView(AdminRequiredMixin, DetailView):
     model = EmployeeData
     template_name = 'emp_app/admin/employee_detail.html'
     context_object_name = 'employee'
