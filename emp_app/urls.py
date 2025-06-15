@@ -42,5 +42,5 @@ urlpatterns = [
     path('leave/<int:pk>/reject/', reject_leave, name='reject_leave'),
     
     # ADD A GENERAL LEAVE REQUEST URL (to fix sidebar if needed)
-    path('add-leave-request/', views.request_leave, name='add_leave_request'),
+    
 ]

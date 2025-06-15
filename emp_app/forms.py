@@ -93,6 +93,7 @@ class LeaveRequestForm(forms.ModelForm):
                 raise forms.ValidationError("Start date cannot be in the past.")
         
         return cleaned_data
+    
 class AdminLeaveAssignForm(forms.ModelForm):
     employee = forms.ModelChoiceField(
         queryset=EmployeeData.objects.filter(status='active'),
