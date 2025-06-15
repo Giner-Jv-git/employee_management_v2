@@ -68,13 +68,46 @@ class EmployeeData(models.Model):
         return f"{self.name} ({self.employee_id})"
 
 class LeaveRequest(models.Model):
-    employee = models.ForeignKey(EmployeeData, on_delete=models.CASCADE)
+    LEAVE_STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+    ]
+    
+    LEAVE_TYPE_CHOICES = [
+        ('sick', 'Sick Leave'),
+        ('vacation', 'Vacation Leave'),
+        ('personal', 'Personal Leave'),
+        ('emergency', 'Emergency Leave'),
+        ('other', 'Other'),
+    ]
+    employee = models.ForeignKey(EmployeeData, on_delete=models.CASCADE, related_name='leave_requests')
+    leave_type = models.CharField(max_length=20, choices=LEAVE_TYPE_CHOICES, default='other')
+    start_date = models.DateField()
+    end_date = models.DateField()
     reason = models.TextField()
-    status = models.CharField(max_length=10, choices=[('pending','Pending'),('approved','Approved'),('rejected','Rejected')], default='pending')
+    status = models.CharField(max_length=10, choices=LEAVE_STATUS_CHOICES, default='pending')
     created_at = models.DateTimeField(auto_now_add=True)
-
+    approved_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='approved_leaves')
+    approved_at = models.DateTimeField(null=True, blank=True)
+    comments = models.TextField(blank=True, help_text="Admin comments on the leave request")
+    
+    # For admin-assigned leave
+    assigned_by_admin = models.BooleanField(default=False)
+    class Meta:
+        ordering = ['-created_at']
     def __str__(self):
-        return f"Leave request for {self.employee.name}"
+        return f"{self.employee.name} - {self.get_leave_type_display()} ({self.start_date} to {self.end_date})"
+    
+    @property
+    def duration_days(self):
+        return (self.end_date - self.start_date).days + 1
+    
+    @property
+    def is_active(self):
+        from django.utils import timezone
+        today = timezone.now().date()
+        return self.status == 'approved' and self.start_date <= today <= self.end_date
 
 
 

@@ -9,10 +9,10 @@ from django.urls import reverse_lazy
 from django.db.models import Q
 from django.utils import timezone
 from django.utils.crypto import get_random_string
-from datetime import timedelta
+from datetime import timedelta,datetime
 from functools import wraps
 from .models import EmployeeData, LeaveRequest, Attendance
-from .forms import EmployeeForm,EditEmployeeForm  
+from .forms import EmployeeForm,EditEmployeeForm,LeaveRequestForm, AdminLeaveAssignForm  
 from django.contrib.auth.models import User
 
 # Custom Mixins for Role-Based Access Control
@@ -242,34 +242,121 @@ def employee_profile(request):
 @employee_required
 def request_leave(request):
     employee = request.user.employee_profile
+    
     if request.method == 'POST':
-        reason = request.POST.get('reason')
-        LeaveRequest.objects.create(employee=employee, reason=reason)
-        messages.success(request, "Leave request submitted!")
+        form = LeaveRequestForm(request.POST)
+        if form.is_valid():
+            leave_request = form.save(commit=False)
+            leave_request.employee = employee
+            leave_request.save()
+            messages.success(request, f"Leave request submitted for {leave_request.duration_days} days!")
+            return redirect('request_leave')
+    else:
+        form = LeaveRequestForm()
+    
+    # Get employee's leave requests with better organization
     leave_requests = LeaveRequest.objects.filter(employee=employee).order_by('-created_at')
-    return render(request, 'emp_app/employee/request_leave.html', {'leave_requests': leave_requests})
+    pending_requests = leave_requests.filter(status='pending')
+    approved_requests = leave_requests.filter(status='approved')
+    
+    # Calculate leave statistics
+    current_year = timezone.now().year
+    approved_days_this_year = sum([
+        lr.duration_days for lr in approved_requests 
+        if lr.start_date.year == current_year
+    ])
+    
+    context = {
+        'form': form,
+        'leave_requests': leave_requests[:10],  # Recent 10
+        'pending_requests': pending_requests,
+        'approved_requests': approved_requests[:5],  # Recent 5 approved
+        'approved_days_this_year': approved_days_this_year,
+        'employee': employee
+    }
+    
+    return render(request, 'emp_app/employee/request_leave.html', context)
 
 @admin_required
 def leave_requests_admin(request):
-    requests = LeaveRequest.objects.select_related('employee').order_by('-created_at')
-    return render(request, 'emp_app/admin/leave_requests.html', {'requests': requests})
+    # Filter options
+    status_filter = request.GET.get('status', '')
+    employee_filter = request.GET.get('employee', '')
+    date_filter = request.GET.get('date_range', '')
+    
+    requests = LeaveRequest.objects.select_related('employee', 'approved_by').order_by('-created_at')
+    
+    # Apply filters
+    if status_filter:
+        requests = requests.filter(status=status_filter)
+    if employee_filter:
+        requests = requests.filter(employee_id=employee_filter)
+    if date_filter == 'this_month':
+        start_of_month = timezone.now().replace(day=1)
+        requests = requests.filter(created_at__gte=start_of_month)
+    elif date_filter == 'this_week':
+        start_of_week = timezone.now() - timedelta(days=timezone.now().weekday())
+        requests = requests.filter(created_at__gte=start_of_week)
+    
+    # Statistics
+    stats = {
+        'total_requests': requests.count(),
+        'pending_requests': requests.filter(status='pending').count(),
+        'approved_requests': requests.filter(status='approved').count(),
+        'rejected_requests': requests.filter(status='rejected').count(),
+    }
+    
+    context = {
+        'requests': requests[:20],  # Paginate later
+        'stats': stats,
+        'employees': EmployeeData.objects.filter(status='active'),
+        'status_filter': status_filter,
+        'employee_filter': employee_filter,
+        'date_filter': date_filter,
+    }
+    
+    return render(request, 'emp_app/admin/leave_requests.html', context)
+
+@admin_required
+def assign_leave(request):
+    if request.method == 'POST':
+        form = AdminLeaveAssignForm(request.POST)
+        if form.is_valid():
+            leave_request = form.save(commit=False)
+            leave_request.assigned_by_admin = True
+            leave_request.status = 'approved'  # Admin-assigned leave is auto-approved
+            leave_request.approved_by = request.user
+            leave_request.approved_at = timezone.now()
+            leave_request.save()
+            
+            messages.success(request, f"Leave assigned to {leave_request.employee.name} for {leave_request.duration_days} days!")
+            return redirect('leave_requests_admin')
+    else:
+        form = AdminLeaveAssignForm()
+    
+    return render(request, 'emp_app/admin/assign_leave.html', {'form': form})
+
 
 @admin_required
 def approve_leave(request, pk):
-    leave = LeaveRequest.objects.get(pk=pk)
+    leave = get_object_or_404(LeaveRequest, pk=pk)
     leave.status = 'approved'
+    leave.approved_by = request.user
+    leave.approved_at = timezone.now()
     leave.save()
-    leave.employee.status = 'inactive'  # Optional: set employee inactive on approval
-    leave.employee.save()
-    messages.success(request, "Leave approved and employee set to inactive.")
+    
+    messages.success(request, f"Leave approved for {leave.employee.name} ({leave.duration_days} days)")
     return redirect('leave_requests_admin')
 
 @admin_required
 def reject_leave(request, pk):
-    leave = LeaveRequest.objects.get(pk=pk)
+    leave = get_object_or_404(LeaveRequest, pk=pk)
     leave.status = 'rejected'
+    leave.approved_by = request.user
+    leave.approved_at = timezone.now()
     leave.save()
-    messages.success(request, "Leave rejected.")
+    
+    messages.success(request, f"Leave rejected for {leave.employee.name}")
     return redirect('leave_requests_admin')
 
 

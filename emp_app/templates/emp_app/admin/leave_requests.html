@@ -1,72 +1,273 @@
 {% extends 'emp_app/base.html' %}
+{% load static %}
+
 {% block content %}
-<div class="max-w-6xl mx-auto p-6">
-    <div class="mb-8">
-        <h1 class="text-3xl font-semibold text-gray-900 mb-2">Leave Requests</h1>
-        <p class="text-gray-600">Review and manage employee leave requests</p>
+<div class="min-h-screen bg-gradient-to-br from-cyan-100 via-blue-50 to-teal-100 relative overflow-hidden">
+    <!-- Beach Wave Background -->
+    <div class="absolute inset-0">
+        <svg class="absolute bottom-0 w-full h-32 text-cyan-200 opacity-30" preserveAspectRatio="none" viewBox="0 0 1200 120" fill="currentColor">
+            <path d="M0,0 C300,40 600,80 900,60 C1050,50 1150,30 1200,20 L1200,120 L0,120 Z"/>
+        </svg>
     </div>
 
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-        {% if requests %}
+    <div class="container mx-auto px-4 py-8 relative z-10">
+        <!-- Header -->
+        <div class="text-center mb-10">
+            <div class="flex justify-center items-center mb-4">
+                <div class="bg-gradient-to-r from-cyan-400 to-teal-500 rounded-full p-4 shadow-lg">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                    </svg>
+                </div>
+            </div>
+            <h1 class="text-4xl font-bold bg-gradient-to-r from-teal-600 to-cyan-600 bg-clip-text text-transparent mb-3">
+                🏖️ Leave Management Dashboard 📋
+            </h1>
+            <p class="text-teal-700 text-lg">Manage team time-off requests with ease</p>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-cyan-200 p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Total Requests</p>
+                        <p class="text-3xl font-bold text-gray-900">{{ stats.total_requests }}</p>
+                    </div>
+                    <div class="bg-blue-100 p-3 rounded-full">
+                        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-cyan-200 p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Pending</p>
+                        <p class="text-3xl font-bold text-yellow-600">{{ stats.pending_requests }}</p>
+                    </div>
+                    <div class="bg-yellow-100 p-3 rounded-full">
+                        <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-cyan-200 p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Approved</p>
+                        <p class="text-3xl font-bold text-green-600">{{ stats.approved_requests }}</p>
+                    </div>
+                    <div class="bg-green-100 p-3 rounded-full">
+                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-cyan-200 p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Rejected</p>
+                        <p class="text-3xl font-bold text-red-600">{{ stats.rejected_requests }}</p>
+                    </div>
+                    <div class="bg-red-100 p-3 rounded-full">
+                        <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-wrap gap-4 mb-8">
+            <a href="{% url 'assign_leave' %}" class="bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-600 hover:to-cyan-700 text-white font-bold py-3 px-6 rounded-2xl shadow-lg transform transition-all duration-300 hover:scale-105 flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+                Assign Leave
+            </a>
+        </div>
+
+        <!-- Filters -->
+        <div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-cyan-200 p-6 mb-8">
+            <form method="get" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                    <select name="status" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-cyan-500">
+                        <option value="">All Status</option>
+                        <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending</option>
+                        <option value="approved" {% if status_filter == 'approved' %}selected{% endif %}>Approved</option>
+                        <option value="rejected" {% if status_filter == 'rejected' %}selected{% endif %}>Rejected</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Employee</label>
+                    <select name="employee" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-cyan-500">
+                        <option value="">All Employees</option>
+                        {% for employee in employees %}
+                        <option value="{{ employee.id }}" {% if employee_filter == employee.id|slugify %}selected{% endif %}>
+                            {{ employee.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
+                    <select name="date_range" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-cyan-500">
+                        <option value="">All Time</option>
+                        <option value="this_week" {% if date_filter == 'this_week' %}selected{% endif %}>This Week</option>
+                        <option value="this_month" {% if date_filter == 'this_month' %}selected{% endif %}>This Month</option>
+                    </select>
+                </div>
+                
+                <div class="flex items-end">
+                    <button type="submit" class="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold py-3 px-4 rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-300">
+                        Filter
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Leave Requests Table -->
+        <div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-cyan-200 overflow-hidden">
             <div class="overflow-x-auto">
-                <table class="w-full">
-                    <thead class="bg-gray-50 border-b border-gray-200">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gradient-to-r from-cyan-500 to-teal-600">
                         <tr>
-                            <th class="text-left py-4 px-6 font-medium text-gray-900">Employee</th>
-                            <th class="text-left py-4 px-6 font-medium text-gray-900">Requested</th>
-                            <th class="text-left py-4 px-6 font-medium text-gray-900">Reason</th>
-                            <th class="text-left py-4 px-6 font-medium text-gray-900">Status</th>
-                            <th class="text-left py-4 px-6 font-medium text-gray-900">Actions</th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">Employee</th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">Leave Type</th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">Dates</th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">Duration</th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">Status</th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">Requested</th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-200">
-                        {% for req in requests %}
-                        <tr class="hover:bg-gray-50">
-                            <td class="py-4 px-6">
-                                <div class="font-medium text-gray-900">{{ req.employee.name }}</div>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for request in requests %}
+                        <tr class="hover:bg-gray-50 transition-colors duration-200">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    {% if request.employee.profile_picture %}
+                                        <img class="h-10 w-10 rounded-full object-cover" src="{{ request.employee.profile_picture.url }}" alt="{{ request.employee.name }}">
+                                    {% else %}
+                                        <div class="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
+                                            <span class="text-gray-600 font-medium">{{ request.employee.name|first }}</span>
+                                        </div>
+                                    {% endif %}
+                                    <div class="ml-4">
+                                        <div class="text-sm font-medium text-gray-900">{{ request.employee.name }}</div>
+                                        <div class="text-sm text-gray-500">{{ request.employee.position }}</div>
+                                    </div>
+                                </div>
                             </td>
-                            <td class="py-4 px-6 text-gray-600">
-                                {{ req.created_at|date:"M d, Y" }}
-                                <div class="text-sm text-gray-500">{{ req.created_at|date:"g:i A" }}</div>
-                            </td>
-                            <td class="py-4 px-6">
-                                <div class="text-gray-900 max-w-xs">{{ req.reason|truncatewords:10 }}</div>
-                            </td>
-                            <td class="py-4 px-6">
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
-                                    {% if req.status == 'pending' %}bg-yellow-100 text-yellow-800
-                                    {% elif req.status == 'approved' %}bg-green-100 text-green-800
-                                    {% else %}bg-red-100 text-red-800{% endif %}">
-                                    {{ req.get_status_display }}
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium
+                                    {% if request.leave_type == 'sick' %}bg-red-100 text-red-800
+                                    {% elif request.leave_type == 'vacation' %}bg-blue-100 text-blue-800
+                                    {% elif request.leave_type == 'personal' %}bg-purple-100 text-purple-800
+                                    {% elif request.leave_type == 'emergency' %}bg-orange-100 text-orange-800
+                                    {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                    {{ request.get_leave_type_display }}
                                 </span>
                             </td>
-                            <td class="py-4 px-6">
-                                {% if req.status == 'pending' %}
-                                    <div class="flex gap-2">
-                                        <a href="{% url 'approve_leave' req.pk %}" 
-                                           class="inline-flex items-center px-3 py-1 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 transition-colors">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                <div>{{ request.start_date }}</div>
+                                <div class="text-gray-500">to {{ request.end_date }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {{ request.duration_days }} day{{ request.duration_days|pluralize }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium
+                                    {% if request.status == 'approved' %}bg-green-100 text-green-800
+                                    {% elif request.status == 'pending' %}bg-yellow-100 text-yellow-800
+                                    {% else %}bg-red-100 text-red-800{% endif %}">
+                                    {{ request.get_status_display }}
+                                </span>
+                                {% if request.assigned_by_admin %}
+                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 ml-1">
+                                        Admin Assigned
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ request.created_at|date:"M d, Y" }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                {% if request.status == 'pending' %}
+                                    <div class="flex space-x-2">
+                                        <a href="{% url 'approve_leave' request.pk %}" 
+                                           class="bg-green-100 hover:bg-green-200 text-green-800 px-3 py-1 rounded-lg text-xs font-medium transition-colors duration-200"
+                                           onclick="return confirm('Approve this leave request?')">
                                             Approve
                                         </a>
-                                        <a href="{% url 'reject_leave' req.pk %}" 
-                                           class="inline-flex items-center px-3 py-1 bg-red-600 text-white text-sm font-medium rounded-md hover:bg-red-700 transition-colors">
+                                        <a href="{% url 'reject_leave' request.pk %}" 
+                                           class="bg-red-100 hover:bg-red-200 text-red-800 px-3 py-1 rounded-lg text-xs font-medium transition-colors duration-200"
+                                           onclick="return confirm('Reject this leave request?')">
                                             Reject
                                         </a>
                                     </div>
                                 {% else %}
-                                    <span class="text-gray-400 text-sm">No actions</span>
+                                    <span class="text-gray-400">No actions</span>
                                 {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="px-6 py-8 text-center">
+                                <div class="text-gray-500">
+                                    <svg class="w-12 h-12 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    </svg>
+                                    No leave requests found
+                                </div>
                             </td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
-        {% else %}
-            <div class="text-center py-12">
-                <div class="text-gray-400 text-lg mb-2">No leave requests</div>
-                <p class="text-gray-500">There are no leave requests to review at this time.</p>
+        </div>
+
+        <!-- Detailed View Modal -->
+        <div id="detailModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
+            <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+                <div class="mt-3">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-medium text-gray-900">Leave Request Details</h3>
+                        <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <div id="modalContent">
+                        <!-- Content will be loaded here -->
+                    </div>
+                </div>
             </div>
-        {% endif %}
+        </div>
     </div>
 </div>
+
+<script>
+function showDetails(requestId) {
+    // You can implement AJAX to load request details
+    document.getElementById('detailModal').classList.remove('hidden');
+}
+
+function closeModal() {
+    document.getElementById('detailModal').classList.add('hidden');
+}
+</script>
 {% endblock %}

@@ -24,8 +24,9 @@ urlpatterns = [
     path('employees/delete/<int:pk>/', DeleteEmployeeView.as_view(), name='delete_employee'),
     path('employees/', views.EmployeeTableView.as_view(), name='view_table'),
     path('employees/<int:pk>/', AdminEmployeeDetailView.as_view(), name='admin_employee_detail'),
-    # ADD THESE NEW ADMIN MANAGEMENT URLS (to fix sidebar navigation)
+    
     path('attendance-management/', views.attendance_management, name='attendance_management'),
+    path('assign-leave/', views.assign_leave, name='assign_leave'),
 
     # employee self-service
     path('employee/profile/', employee_profile, name='employee_profile'),
