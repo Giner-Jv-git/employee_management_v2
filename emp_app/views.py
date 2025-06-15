@@ -12,7 +12,7 @@ from django.utils.crypto import get_random_string
 from datetime import timedelta
 from functools import wraps
 from .models import EmployeeData, LeaveRequest, Attendance
-from .forms import EmployeeForm
+from .forms import EmployeeForm,EditEmployeeForm  
 from django.contrib.auth.models import User
 
 # Custom Mixins for Role-Based Access Control
@@ -191,15 +191,13 @@ class EmployeeTableView(AdminRequiredMixin, ListView):
 
 class EditEmployeeView(AdminRequiredMixin, UpdateView):
     model = EmployeeData
-    form_class = EmployeeForm
+    form_class = EditEmployeeForm  # Change from EmployeeForm to EditEmployeeForm
     template_name = 'emp_app/admin/edit_employee.html'
     success_url = reverse_lazy('view_table')
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['employee'] = self.get_object()
         return context
-
     def form_valid(self, form):
         response = super().form_valid(form)
         messages.success(self.request, 'Employee updated successfully!')
