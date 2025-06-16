@@ -1317,6 +1317,9 @@
       background-color: color-mix(in oklab, var(--color-orange-300) 40%, transparent);
     }
   }
+  .bg-orange-600 {
+    background-color: var(--color-orange-600);
+  }
   .bg-pink-400 {
     background-color: var(--color-pink-400);
   }
@@ -1367,6 +1370,9 @@
   }
   .bg-teal-400 {
     background-color: var(--color-teal-400);
+  }
+  .bg-teal-600 {
+    background-color: var(--color-teal-600);
   }
   .bg-white {
     background-color: var(--color-white);
@@ -1544,6 +1550,17 @@
   }
   .from-teal-600 {
     --tw-gradient-from: var(--color-teal-600);
+    --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
+  }
+  .from-white {
+    --tw-gradient-from: var(--color-white);
+    --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
+  }
+  .from-white\/20 {
+    --tw-gradient-from: color-mix(in srgb, #fff 20%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      --tw-gradient-from: color-mix(in oklab, var(--color-white) 20%, transparent);
+    }
     --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
   }
   .from-yellow-50 {
@@ -1802,6 +1819,9 @@
   }
   .py-16 {
     padding-block: calc(var(--spacing) * 16);
+  }
+  .pt-3 {
+    padding-top: calc(var(--spacing) * 3);
   }
   .pt-6 {
     padding-top: calc(var(--spacing) * 6);
@@ -2180,6 +2200,16 @@
     transition-timing-function: var(--tw-ease, var(--default-transition-timing-function));
     transition-duration: var(--tw-duration, var(--default-transition-duration));
   }
+  .transition-opacity {
+    transition-property: opacity;
+    transition-timing-function: var(--tw-ease, var(--default-transition-timing-function));
+    transition-duration: var(--tw-duration, var(--default-transition-duration));
+  }
+  .transition-shadow {
+    transition-property: box-shadow;
+    transition-timing-function: var(--tw-ease, var(--default-transition-timing-function));
+    transition-duration: var(--tw-duration, var(--default-transition-duration));
+  }
   .transition-transform {
     transition-property: transform, translate, scale, rotate;
     transition-timing-function: var(--tw-ease, var(--default-transition-timing-function));
@@ -2253,6 +2283,13 @@
     &:is(:where(.group):hover *) {
       @media (hover: hover) {
         color: var(--color-teal-700);
+      }
+    }
+  }
+  .group-hover\:opacity-100 {
+    &:is(:where(.group):hover *) {
+      @media (hover: hover) {
+        opacity: 100%;
       }
     }
   }
@@ -2475,6 +2512,13 @@
       }
     }
   }
+  .hover\:bg-orange-700 {
+    &:hover {
+      @media (hover: hover) {
+        background-color: var(--color-orange-700);
+      }
+    }
+  }
   .hover\:bg-purple-200 {
     &:hover {
       @media (hover: hover) {
@@ -2507,6 +2551,13 @@
     &:hover {
       @media (hover: hover) {
         background-color: var(--color-red-700);
+      }
+    }
+  }
+  .hover\:bg-teal-700 {
+    &:hover {
+      @media (hover: hover) {
+        background-color: var(--color-teal-700);
       }
     }
   }
@@ -2618,6 +2669,14 @@
     &:hover {
       @media (hover: hover) {
         --tw-gradient-from: var(--color-teal-600);
+        --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
+      }
+    }
+  }
+  .hover\:from-teal-700 {
+    &:hover {
+      @media (hover: hover) {
+        --tw-gradient-from: var(--color-teal-700);
         --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
       }
     }
@@ -2866,6 +2925,11 @@
   .focus\:ring-red-500 {
     &:focus {
       --tw-ring-color: var(--color-red-500);
+    }
+  }
+  .focus\:ring-teal-300 {
+    &:focus {
+      --tw-ring-color: var(--color-teal-300);
     }
   }
   .focus\:ring-yellow-400 {

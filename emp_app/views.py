@@ -15,6 +15,16 @@ from .models import EmployeeData, LeaveRequest, Attendance
 from .forms import EmployeeForm,EditEmployeeForm,LeaveRequestForm, AdminLeaveAssignForm  
 from django.contrib.auth.models import User
 
+def cleanup_expired_leaves():
+    """Automatically update expired leave requests in bulk"""
+    from django.utils import timezone
+    today = timezone.now().date()
+    
+    return LeaveRequest.objects.filter(
+        status='approved',
+        end_date__lt=today
+    ).update(status='completed')
+
 # Custom Mixins for Role-Based Access Control
 class AdminRequiredMixin(UserPassesTestMixin):
     """Only allow admin users (users without employee_profile)"""
@@ -101,6 +111,9 @@ class AdminDashboardView(AdminRequiredMixin, TemplateView):
     template_name = 'emp_app/admin/dashboard.html'
 
     def get_context_data(self, **kwargs):
+        # Clean up expired leaves first
+        cleanup_expired_leaves()
+        
         context = super().get_context_data(**kwargs)
         today = timezone.now().date()
         
@@ -156,10 +169,10 @@ class AdminDashboardView(AdminRequiredMixin, TemplateView):
             # Get pending leave requests count
             employee.pending_leaves = employee.leave_requests.filter(status='pending').count()
             
-            # Get total approved leave days this year
+            # Get total approved + completed leave days this year
             current_year = timezone.now().year
             approved_leaves_this_year = employee.leave_requests.filter(
-                status='approved',
+                status__in=['approved', 'completed'],
                 start_date__year=current_year
             )
             employee.total_leave_days_this_year = sum([
@@ -187,6 +200,7 @@ class AdminDashboardView(AdminRequiredMixin, TemplateView):
             status='approved',
             approved_at__gte=timezone.now().replace(day=1)
         ).count()
+        context['total_completed_leaves'] = LeaveRequest.objects.filter(status='completed').count()
         
         return context
 
@@ -364,17 +378,106 @@ def employee_profile(request):
         form = EmployeeForm(instance=employee)
     return render(request, 'emp_app/employee/profile.html', {'form': form, 'employee': employee})
 
+
 @employee_required
 def request_leave(request):
     employee = request.user.employee_profile
+    today = timezone.now().date()
+    
+    # Clean up expired leaves first
+    cleanup_expired_leaves()
+    
+    # Check if employee is currently on approved leave
+    current_leave = employee.leave_requests.filter(
+        status='approved',
+        start_date__lte=today,
+        end_date__gte=today
+    ).first()
+    
+    if current_leave:
+        # If it's a POST request (form submission), show error and redirect
+        if request.method == 'POST':
+            messages.error(request, f"❌ You cannot request leave while currently on approved leave until {current_leave.end_date}!")
+            return redirect('request_leave')  # Redirect instead of rendering
+        
+        # If it's a GET request, show the page with warning message
+        messages.warning(request, f"⚠️ You are currently on approved leave until {current_leave.end_date}. You cannot submit new leave requests.")
+        context = {
+            'form': LeaveRequestForm(),
+            'leave_requests': LeaveRequest.objects.filter(employee=employee).order_by('-created_at')[:10],
+            'pending_requests': employee.leave_requests.filter(status='pending'),
+            'approved_requests': employee.leave_requests.filter(status='approved')[:5],
+            'approved_days_this_year': sum([
+                lr.duration_days for lr in employee.leave_requests.filter(status='approved', start_date__year=timezone.now().year)
+            ]),
+            'employee': employee,
+            'currently_on_leave': current_leave
+        }
+        return render(request, 'emp_app/employee/request_leave.html', context)
     
     if request.method == 'POST':
         form = LeaveRequestForm(request.POST)
         if form.is_valid():
+            start_date = form.cleaned_data['start_date']
+            end_date = form.cleaned_data['end_date']
+            
+            # Validate dates
+            if start_date < today:
+                messages.error(request, "❌ Start date cannot be in the past!")
+                context = {
+                    'form': form,
+                    'leave_requests': LeaveRequest.objects.filter(employee=employee).order_by('-created_at')[:10],
+                    'pending_requests': employee.leave_requests.filter(status='pending'),
+                    'approved_requests': employee.leave_requests.filter(status='approved')[:5],
+                    'approved_days_this_year': sum([
+                        lr.duration_days for lr in employee.leave_requests.filter(status='approved', start_date__year=timezone.now().year)
+                    ]),
+                    'employee': employee
+                }
+                return render(request, 'emp_app/employee/request_leave.html', context)
+            
+            if end_date < start_date:
+                messages.error(request, "❌ End date must be after or equal to start date!")
+                context = {
+                    'form': form,
+                    'leave_requests': LeaveRequest.objects.filter(employee=employee).order_by('-created_at')[:10],
+                    'pending_requests': employee.leave_requests.filter(status='pending'),
+                    'approved_requests': employee.leave_requests.filter(status='approved')[:5],
+                    'approved_days_this_year': sum([
+                        lr.duration_days for lr in employee.leave_requests.filter(status='approved', start_date__year=timezone.now().year)
+                    ]),
+                    'employee': employee
+                }
+                return render(request, 'emp_app/employee/request_leave.html', context)
+            
+            # Check for overlapping requests (both pending and approved)
+            overlapping = employee.leave_requests.filter(
+                Q(status='approved') | Q(status='pending'),
+                start_date__lte=end_date,
+                end_date__gte=start_date
+            )
+            
+            if overlapping.exists():
+                overlapping_request = overlapping.first()
+                messages.error(request, f"❌ You have a conflicting {overlapping_request.get_status_display()} leave request from {overlapping_request.start_date} to {overlapping_request.end_date}!")
+                context = {
+                    'form': form,
+                    'leave_requests': LeaveRequest.objects.filter(employee=employee).order_by('-created_at')[:10],
+                    'pending_requests': employee.leave_requests.filter(status='pending'),
+                    'approved_requests': employee.leave_requests.filter(status='approved')[:5],
+                    'approved_days_this_year': sum([
+                        lr.duration_days for lr in employee.leave_requests.filter(status='approved', start_date__year=timezone.now().year)
+                    ]),
+                    'employee': employee
+                }
+                return render(request, 'emp_app/employee/request_leave.html', context)
+            
+            # All validations passed - save the leave request
             leave_request = form.save(commit=False)
             leave_request.employee = employee
             leave_request.save()
-            messages.success(request, f"Leave request submitted for {leave_request.duration_days} days!")
+            
+            messages.success(request, f"✅ Leave request submitted successfully for {leave_request.duration_days} days from {start_date} to {end_date}!")
             return redirect('request_leave')
     else:
         form = LeaveRequestForm()
@@ -383,6 +486,7 @@ def request_leave(request):
     leave_requests = LeaveRequest.objects.filter(employee=employee).order_by('-created_at')
     pending_requests = leave_requests.filter(status='pending')
     approved_requests = leave_requests.filter(status='approved')
+    completed_requests = leave_requests.filter(status='completed')
     
     # Calculate leave statistics
     current_year = timezone.now().year
@@ -391,16 +495,84 @@ def request_leave(request):
         if lr.start_date.year == current_year
     ])
     
+    completed_days_this_year = sum([
+        lr.duration_days for lr in completed_requests 
+        if lr.start_date.year == current_year
+    ])
+    
     context = {
         'form': form,
         'leave_requests': leave_requests[:10],  # Recent 10
         'pending_requests': pending_requests,
         'approved_requests': approved_requests[:5],  # Recent 5 approved
+        'completed_requests': completed_requests[:5],  # Recent 5 completed
         'approved_days_this_year': approved_days_this_year,
-        'employee': employee
+        'completed_days_this_year': completed_days_this_year,
+        'total_leave_days_this_year': approved_days_this_year + completed_days_this_year,
+        'employee': employee,
+        'currently_on_leave': current_leave
     }
     
     return render(request, 'emp_app/employee/request_leave.html', context)
+
+@employee_required
+def cancel_current_leave(request):
+    if request.method == 'POST':
+        employee = request.user.employee_profile
+        today = timezone.now().date()
+        
+        # Find current active leave
+        current_leave = employee.leave_requests.filter(
+            status='approved',
+            start_date__lte=today,
+            end_date__gte=today
+        ).first()
+        
+        if current_leave:
+            # Cancel the leave by updating end date to yesterday
+            yesterday = today - timedelta(days=1)
+            current_leave.end_date = yesterday
+            current_leave.status = 'completed'
+            current_leave.comments = f"Cancelled by employee on {today}"
+            current_leave.save()
+            
+            messages.success(request, f"✅ Your leave has been cancelled successfully! You are now back to work.")
+            return redirect('request_leave')
+        else:
+            messages.error(request, "❌ No active leave found to cancel.")
+            return redirect('request_leave')
+    
+    return redirect('request_leave')
+@employee_required
+def early_return_from_leave(request):
+    if request.method == 'POST':
+        employee = request.user.employee_profile
+        today = timezone.now().date()
+        
+        # Find current active leave
+        current_leave = employee.leave_requests.filter(
+            status='approved',
+            start_date__lte=today,
+            end_date__gte=today
+        ).first()
+        
+        if current_leave:
+            original_end_date = current_leave.end_date
+            days_saved = (original_end_date - today).days
+            
+            # End leave today
+            current_leave.end_date = today
+            current_leave.status = 'completed'
+            current_leave.comments = f"Early return by employee on {today}. Original end date was {original_end_date}."
+            current_leave.save()
+            
+            messages.success(request, f"✅ Welcome back! You returned {days_saved} day{'s' if days_saved != 1 else ''} early from your leave.")
+            return redirect('request_leave')
+        else:
+            messages.error(request, "❌ No active leave found.")
+            return redirect('request_leave')
+    
+    return redirect('request_leave')
 
 @employee_required
 def leave_history(request):
@@ -436,6 +608,9 @@ def leave_history(request):
 
 @admin_required
 def leave_requests_admin(request):
+    # Clean up expired leaves first
+    cleanup_expired_leaves()
+    
     # Filter options
     status_filter = request.GET.get('status', '')
     employee_filter = request.GET.get('employee', '')
@@ -455,12 +630,13 @@ def leave_requests_admin(request):
         start_of_week = timezone.now() - timedelta(days=timezone.now().weekday())
         requests = requests.filter(created_at__gte=start_of_week)
     
-    # Statistics
+    # Statistics (added completed requests)
     stats = {
         'total_requests': requests.count(),
         'pending_requests': requests.filter(status='pending').count(),
         'approved_requests': requests.filter(status='approved').count(),
         'rejected_requests': requests.filter(status='rejected').count(),
+        'completed_requests': requests.filter(status='completed').count(),
     }
     
     context = {

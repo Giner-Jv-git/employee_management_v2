@@ -5,7 +5,7 @@ from .views import (
     EditEmployeeView, DeleteEmployeeView, EmployeeDetailView,
     add_employee, employee_profile, request_leave, approve_leave,
     attendance_list, add_attendance, leave_requests_admin, reject_leave,
-    attendance_management, employee_clock_attendance,
+    attendance_management, employee_clock_attendance, cancel_current_leave, early_return_from_leave
 )
 
 urlpatterns = [
@@ -40,6 +40,7 @@ urlpatterns = [
     path('leave/<int:pk>/approve/', approve_leave, name='approve_leave'),
     path('leave/<int:pk>/reject/', reject_leave, name='reject_leave'),
 
+
     # ---------------------------
     # Employee Self-Service
     # ---------------------------
@@ -48,4 +49,6 @@ urlpatterns = [
     path('employee/attendance/', attendance_list, name='attendance_list'),
     path('employee/clock-attendance/', employee_clock_attendance, name='employee_clock_attendance'),
     path('leave-history/', views.leave_history, name='leave_history'),
+    path('cancel-current-leave/', cancel_current_leave, name='cancel_current_leave'),
+    path('early-return-from-leave/', early_return_from_leave, name='early_return_from_leave'),
 ]

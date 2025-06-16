@@ -93,7 +93,6 @@
                             <th class="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">Contact</th>
                             <th class="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">Position</th>
                             <th class="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">Leave Status</th>
-                            <th class="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">Leave Days ({{ today.year }})</th>
                             <th class="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">Status</th>
                             <th class="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">Actions</th>
                         </tr>
@@ -168,18 +167,6 @@
                                 {% endif %}
                             </td>
 
-                            <!-- Leave Days This Year -->
-                            <td class="px-6 py-4 whitespace-nowrap text-center">
-                                <div class="text-lg font-bold text-gray-900">{{ employee.total_leave_days_this_year }}</div>
-                                <div class="text-xs text-gray-500">days used</div>
-                                {% if employee.total_leave_days_this_year > 15 %}
-                                    <div class="text-xs text-red-500">⚠️ High usage</div>
-                                {% elif employee.total_leave_days_this_year > 10 %}
-                                    <div class="text-xs text-yellow-500">📊 Moderate</div>
-                                {% else %}
-                                    <div class="text-xs text-green-500">✅ Low usage</div>
-                                {% endif %}
-                            </td>
 
                             <!-- Employment Status -->
                             <td class="px-6 py-4 whitespace-nowrap">
