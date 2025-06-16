@@ -147,6 +147,7 @@
                             <th class="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">Leave Type</th>
                             <th class="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">Dates</th>
                             <th class="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">Duration</th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">Reason</th>
                             <th class="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">Status</th>
                             <th class="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">Requested</th>
                             <th class="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">Actions</th>
@@ -186,6 +187,11 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                 {{ request.duration_days }} day{{ request.duration_days|pluralize }}
+                            </td>
+                            <td class="px-6 py-4 text-sm text-gray-900 max-w-xs">
+                                <div class="truncate" title="{{ request.reason }}">
+                                    {{ request.reason|default:"No reason provided" }}
+                                </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium

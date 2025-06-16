@@ -7,7 +7,7 @@ from django.core.validators import RegexValidator
 class EmployeeProfile(models.Model):
     ROLE_CHOICES = [
         ('admin', 'Administrator'),
-        ('hr', 'HR Personnel'),
+        
     ]
     
     user = models.OneToOneField(User, on_delete=models.CASCADE)
