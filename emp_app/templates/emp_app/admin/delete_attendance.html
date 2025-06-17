@@ -1,0 +1,174 @@
+{% extends 'emp_app/emp_base.html' %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-cyan-100 via-blue-50 to-teal-100 relative overflow-hidden">
+    <!-- Beach Wave Background -->
+    <div class="absolute inset-0">
+        <svg class="absolute bottom-0 w-full h-32 text-cyan-200 opacity-30" preserveAspectRatio="none" viewBox="0 0 1200 120" fill="currentColor">
+            <path d="M0,0 C300,40 600,80 900,60 C1050,50 1150,30 1200,20 L1200,120 L0,120 Z"/>
+        </svg>
+        <svg class="absolute top-0 w-full h-32 text-red-200 opacity-20" preserveAspectRatio="none" viewBox="0 0 1200 120" fill="currentColor">
+            <path d="M0,120 C300,80 600,40 900,60 C1050,70 1150,90 1200,100 L1200,0 L0,0 Z"/>
+        </svg>
+    </div>
+
+    <div class="container mx-auto px-4 py-8 relative z-10">
+        <!-- Header -->
+        <div class="text-center mb-10">
+            <!-- Breadcrumb -->
+            <nav class="text-sm text-teal-600 mb-6 flex justify-center items-center">
+                <a href="{% url 'attendance_management' %}" class="hover:text-cyan-600 transition-colors duration-200 font-medium">
+                    🏖️ Attendance Paradise
+                </a>
+                <span class="mx-3 text-teal-400">›</span>
+                <span class="text-red-600 font-bold">🗑️ Delete Record</span>
+            </nav>
+            
+            <div class="flex justify-center items-center mb-4">
+                <div class="bg-gradient-to-r from-red-400 to-pink-500 rounded-full p-4 shadow-lg">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                    </svg>
+                </div>
+            </div>
+            <h1 class="text-4xl font-bold bg-gradient-to-r from-red-600 to-pink-600 bg-clip-text text-transparent mb-3">
+                🗑️ Remove Beach Record
+            </h1>
+            <p class="text-red-700 text-lg">Are you sure you want to erase this beach memory?</p>
+        </div>
+
+        <!-- Warning Card -->
+        <div class="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl border-2 border-red-200 p-8 mb-8 max-w-2xl mx-auto">
+            <div class="bg-red-50 border-2 border-red-200 rounded-2xl p-6 mb-6">
+                <div class="flex">
+                    <svg class="w-8 h-8 text-red-500 mr-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                    </svg>
+                    <div>
+                        <h3 class="text-xl font-bold text-red-800 mb-2">⚠️ Warning: Beach Memory Will Be Lost!</h3>
+                        <p class="text-red-700">This action cannot be undone. The beach record will be permanently erased from the island's memory.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Record Details -->
+            <div class="bg-gradient-to-r from-cyan-50 to-teal-50 rounded-2xl p-6 mb-8">
+                <h3 class="text-lg font-bold text-teal-800 mb-4 flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+                    </svg>
+                    🏄‍♂️ Beach Record Details
+                </h3>
+                
+                <div class="flex items-center mb-6">
+                    {% if attendance.employee.profile_picture %}
+                        <img class="h-16 w-16 rounded-full object-cover mr-4 border-4 border-cyan-200 shadow-lg" src="{{ attendance.employee.profile_picture.url }}" alt="{{ attendance.employee.name }}">
+                    {% else %}
+                        <div class="h-16 w-16 rounded-full bg-gradient-to-r from-cyan-400 to-teal-500 flex items-center justify-center text-white font-bold text-xl mr-4 shadow-lg">
+                            {{ attendance.employee.name|first }}
+                        </div>
+                    {% endif %}
+                    <div>
+                        <h4 class="text-xl font-bold text-teal-800">{{ attendance.employee.name }}</h4>
+                        <p class="text-teal-600">{{ attendance.employee.get_position_display }}</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-white/80 backdrop-blur-sm rounded-xl p-4">
+                        <span class="font-bold text-teal-700">📅 Beach Date:</span>
+                        <span class="text-teal-900 block text-lg">{{ attendance.date|date:"F j, Y" }}</span>
+                        <span class="text-teal-600 text-sm">{{ attendance.date|date:"l" }}</span>
+                    </div>
+                    
+                    <div class="bg-white/80 backdrop-blur-sm rounded-xl p-4">
+                        <span class="font-bold text-teal-700">🏖️ Status:</span>
+                        <span class="block">
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold mt-1
+                                {% if attendance.status == 'present' %}bg-emerald-100 text-emerald-800
+                                {% elif attendance.status == 'late' %}bg-yellow-100 text-yellow-800
+                                {% else %}bg-red-100 text-red-800{% endif %}">
+                                {% if attendance.status == 'present' %}🌴
+                                {% elif attendance.status == 'late' %}⏰
+                                {% else %}❌{% endif %}
+                                {{ attendance.get_status_display }}
+                            </span>
+                        </span>
+                    </div>
+                    
+                    <div class="bg-white/80 backdrop-blur-sm rounded-xl p-4">
+                        <span class="font-bold text-teal-700">🌅 Arrival:</span>
+                        <span class="text-emerald-700 block text-lg font-bold">{{ attendance.time_in|time:"g:i A" }}</span>
+                    </div>
+                    
+                    <div class="bg-white/80 backdrop-blur-sm rounded-xl p-4">
+                        <span class="font-bold text-teal-700">🌇 Departure:</span>
+                        {% if attendance.time_out %}
+                            <span class="text-red-700 block text-lg font-bold">{{ attendance.time_out|time:"g:i A" }}</span>
+                        {% else %}
+                            <span class="text-yellow-600 block font-bold">☀️ Still on Beach</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col sm:flex-row gap-4">
+                <form method="post" class="flex-1">
+                    {% csrf_token %}
+                    <button type="submit" 
+                            class="w-full bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white font-bold py-4 px-8 rounded-2xl shadow-xl transform hover:scale-105 transition-all duration-200 flex items-center justify-center">
+                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                        </svg>
+                        🗑️ Yes, Erase Beach Memory
+                    </button>
+                </form>
+                
+                <a href="{% url 'attendance_management' %}" 
+                   class="flex-1 bg-gradient-to-r from-gray-400 to-gray-500 hover:from-gray-500 hover:to-gray-600 text-white font-bold py-4 px-8 rounded-2xl shadow-xl transform hover:scale-105 transition-all duration-200 flex items-center justify-center">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                    🚫 Keep the Memory
+                </a>
+            </div>
+        </div>
+
+        <!-- Info Card -->
+        <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-lg border border-cyan-200 p-6 max-w-2xl mx-auto">
+            <h3 class="text-lg font-bold text-teal-800 mb-3 flex items-center">
+                <svg class="w-5 h-5 mr-2 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                💡 Beach Wisdom
+            </h3>
+            <p class="text-teal-700">
+                Once a beach memory is erased, it cannot be recovered. Consider if this record might be needed for future reference before proceeding with deletion.
+            </p>
+        </div>
+    </div>
+</div>
+
+<script>
+// Add confirmation dialog
+document.querySelector('form').addEventListener('submit', function(e) {
+    if (!confirm('🏖️ Are you absolutely sure you want to erase this beach memory? This action cannot be undone!')) {
+        e.preventDefault();
+    }
+});
+
+// Add floating animation to cards
+document.addEventListener('DOMContentLoaded', function() {
+    const cards = document.querySelectorAll('.backdrop-blur-sm');
+    cards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px)';
+        });
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+        });
+    });
+});
+</script>
+{% endblock %}

@@ -31,4 +31,3 @@ document.addEventListener('DOMContentLoaded', function() {
         endDateInput.addEventListener('change', calculateDuration);
     }
 });
-</script>

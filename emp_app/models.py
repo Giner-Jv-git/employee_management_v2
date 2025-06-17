@@ -72,6 +72,7 @@ class LeaveRequest(models.Model):
         ('pending', 'Pending'),
         ('approved', 'Approved'),
         ('rejected', 'Rejected'),
+        ('completed', 'Completed'),  # Added this
     ]
     
     LEAVE_TYPE_CHOICES = [
@@ -81,6 +82,7 @@ class LeaveRequest(models.Model):
         ('emergency', 'Emergency Leave'),
         ('other', 'Other'),
     ]
+    
     employee = models.ForeignKey(EmployeeData, on_delete=models.CASCADE, related_name='leave_requests')
     leave_type = models.CharField(max_length=20, choices=LEAVE_TYPE_CHOICES, default='other')
     start_date = models.DateField()
@@ -94,8 +96,10 @@ class LeaveRequest(models.Model):
     
     # For admin-assigned leave
     assigned_by_admin = models.BooleanField(default=False)
+    
     class Meta:
         ordering = ['-created_at']
+    
     def __str__(self):
         return f"{self.employee.name} - {self.get_leave_type_display()} ({self.start_date} to {self.end_date})"
     
@@ -108,23 +112,64 @@ class LeaveRequest(models.Model):
         from django.utils import timezone
         today = timezone.now().date()
         return self.status == 'approved' and self.start_date <= today <= self.end_date
+    
+    def update_status_if_expired(self):
+        """Check if this leave request has expired and update status"""
+        from django.utils import timezone
+        if self.status == 'approved' and self.end_date < timezone.now().date():
+            self.status = 'completed'
+            self.save()
+            return True
+        return False
+    
+    @classmethod
+    def cleanup_expired_leaves(cls):
+        """Bulk update all expired approved leaves to completed status"""
+        from django.utils import timezone
+        today = timezone.now().date()
+        
+        return cls.objects.filter(
+            status='approved',
+            end_date__lt=today
+        ).update(status='completed')
 
 
 
 class Attendance(models.Model):
     employee = models.ForeignKey(EmployeeData, on_delete=models.CASCADE)
     date = models.DateField()
-    time_in = models.TimeField()
+    time_in = models.TimeField(null=True, blank=True)  # Fixed: Allow null values
     time_out = models.TimeField(null=True, blank=True)
-    status = models.CharField(max_length=20, choices=[('present', 'Present'), ('absent', 'Absent')])
-
-# Signal to create profile when user is created
-@receiver(post_save, sender=User)
-def create_user_profile(sender, instance, created, **kwargs):
-    if created:
-        EmployeeProfile.objects.create(user=instance)
-
-@receiver(post_save, sender=User)
-def save_user_profile(sender, instance, **kwargs):
-    if hasattr(instance, 'profile'):
-        instance.profile.save()
+    status = models.CharField(max_length=20, choices=[
+        ('present', 'Present'), 
+        ('absent', 'Absent'),
+        ('late', 'Late'),  # Added for beach theme
+    ], default='absent')
+    
+    class Meta:
+        unique_together = ('employee', 'date')
+        
+    def __str__(self):
+        return f"{self.employee.name} - {self.date}"
+    
+    def get_status_display(self):
+        status_dict = {
+            'present': 'Present',
+            'absent': 'Absent', 
+            'late': 'Late'
+        }
+        return status_dict.get(self.status, self.status)
+    
+    @property
+    def work_duration(self):
+        """Calculate work duration"""
+        if self.time_in and self.time_out:
+            from datetime import datetime
+            time_in_dt = datetime.combine(self.date, self.time_in)
+            time_out_dt = datetime.combine(self.date, self.time_out)
+            duration = time_out_dt - time_in_dt
+            
+            hours = duration.seconds // 3600
+            minutes = (duration.seconds % 3600) // 60
+            return {'hours': hours, 'minutes': minutes}
+        return None

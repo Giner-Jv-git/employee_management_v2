@@ -9,11 +9,17 @@ from django.urls import reverse_lazy
 from django.db.models import Q
 from django.utils import timezone
 from django.utils.crypto import get_random_string
-from datetime import timedelta,datetime
+from datetime import timedelta,datetime,time
 from functools import wraps
 from .models import EmployeeData, LeaveRequest, Attendance
 from .forms import EmployeeForm,EditEmployeeForm,LeaveRequestForm, AdminLeaveAssignForm  
 from django.contrib.auth.models import User
+import csv
+from django.http import HttpResponse
+from django.conf import settings
+
+
+
 
 def cleanup_expired_leaves():
     """Automatically update expired leave requests in bulk"""
@@ -543,6 +549,7 @@ def cancel_current_leave(request):
             return redirect('request_leave')
     
     return redirect('request_leave')
+
 @employee_required
 def early_return_from_leave(request):
     if request.method == 'POST':
@@ -700,25 +707,175 @@ def attendance_list(request):
     return render(request, 'emp_app/employee/attendance_list.html', {'attendance': attendance})
 
 
+#attendance
 
 @admin_required
 def add_attendance(request, employee_id):
-    employee = EmployeeData.objects.get(pk=employee_id)
+    employee = get_object_or_404(EmployeeData, pk=employee_id)
     if request.method == 'POST':
         date = request.POST['date']
         time_in = request.POST['time_in']
-        time_out = request.POST.get('time_out')
+        time_out = request.POST.get('time_out', None)
         status = request.POST['status']
+        
+        # Convert time strings to time objects for validation
+        try:
+            time_in_obj = datetime.strptime(time_in, '%H:%M').time()
+            time_out_obj = None
+            if time_out:
+                time_out_obj = datetime.strptime(time_out, '%H:%M').time()
+                # Validate that time_out is after time_in
+                if time_out_obj <= time_in_obj:
+                    messages.error(request, "Time out must be after time in!")
+                    return render(request, 'emp_app/admin/add_attendance.html', {'employee': employee})
+        except ValueError:
+            messages.error(request, "Invalid time format!")
+            return render(request, 'emp_app/admin/add_attendance.html', {'employee': employee})
+        
+        # Check if attendance already exists for this date
+        existing_attendance = Attendance.objects.filter(employee=employee, date=date).first()
+        if existing_attendance:
+            messages.error(request, f"Attendance record already exists for {employee.name} on {date}!")
+            return render(request, 'emp_app/admin/add_attendance.html', {'employee': employee})
+        
         Attendance.objects.create(
             employee=employee,
             date=date,
-            time_in=time_in,
-            time_out=time_out,
+            time_in=time_in_obj,
+            time_out=time_out_obj,
             status=status
         )
         messages.success(request, f"Attendance added for {employee.name}!")
-        return redirect('admin_employee_detail', pk=employee_id)
+        return redirect('attendance_management')
+    
     return render(request, 'emp_app/admin/add_attendance.html', {'employee': employee})
+
+@admin_required
+def attendance_management(request):
+    today = timezone.now().date()
+    employees = EmployeeData.objects.filter(status='active').order_by('name')
+    
+    # Get today's attendance for all employees
+    today_attendance = Attendance.objects.filter(date=today).select_related('employee')
+    
+    # Add today's attendance to each employee
+    for employee in employees:
+        employee.today_attendance = today_attendance.filter(employee=employee).first()
+    
+    # Calculate statistics
+    present_employees = today_attendance.filter(status__in=['present', 'late'])
+    working_employees = present_employees.filter(time_out__isnull=True)
+    completed_employees = present_employees.filter(time_out__isnull=False)
+    absent_employees = employees.exclude(
+        id__in=today_attendance.values_list('employee_id', flat=True)
+    )
+    
+    # Recent attendance (last 10 records)
+    recent_attendance = Attendance.objects.select_related('employee').order_by('-date', '-time_in')[:10]
+    
+    context = {
+        'employees': employees,
+        'recent_attendance': recent_attendance,
+        'present_count': present_employees.count(),
+        'working_count': working_employees.count(),
+        'completed_count': completed_employees.count(),
+        'absent_count': absent_employees.count(),
+        'today': today,
+    }
+    
+    return render(request, 'emp_app/admin/attendance_management.html', context)
+
+
+def get_philippines_time():
+    """Get Philippines time by adding 8 hours to UTC"""
+    utc_time = timezone.now()
+    philippines_time = utc_time + timedelta(hours=8)
+    return philippines_time
+
+@login_required
+def employee_clock_attendance(request):
+    try:
+        if hasattr(request.user, 'employeedata'):
+            employee = request.user.employeedata
+        else:
+            employee = EmployeeData.objects.get(user=request.user)
+    except:
+        messages.error(request, "🏖️ Employee profile not found!")
+        return redirect('dashboard')
+    
+    # Get Philippines time (UTC+8)
+    current_time = get_philippines_time()
+    today = current_time.date()
+    
+    today_attendance = Attendance.objects.filter(employee=employee, date=today).first()
+    
+    # Define work schedule times for COMPARISON (not display)
+    work_start_time = datetime.combine(today, datetime.min.time().replace(hour=9, minute=0))
+    late_threshold = datetime.combine(today, datetime.min.time().replace(hour=9, minute=15))
+    
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        if action == 'clock_in':
+            if today_attendance and today_attendance.time_in:
+                messages.warning(request, "🏖️ You've already clocked in today!")
+            else:
+                ph_time = get_philippines_time()
+                
+                # Create datetime object for comparison
+                clock_in_datetime = datetime.combine(today, ph_time.time())
+                
+                # Determine status by comparing DATETIME objects
+                if clock_in_datetime <= work_start_time:
+                    status = 'present'
+                    message = f"🌅 Perfect timing, {employee.name}! Early bird gets the best waves!"
+                elif clock_in_datetime <= late_threshold:
+                    status = 'present'
+                    message = f"🌅 Good morning, {employee.name}! Just made it on time!"
+                else:
+                    status = 'late'
+                    message = f"⏰ Hello {employee.name}! You're late, but the tropical beach is still beautiful!"
+                
+                print(f"Clock in time: {clock_in_datetime}")
+                print(f"Work start: {work_start_time}")
+                print(f"Late threshold: {late_threshold}")
+                print(f"Status: {status}")
+                
+                if today_attendance:
+                    today_attendance.time_in = ph_time.time()
+                    today_attendance.status = status
+                    today_attendance.save()
+                else:
+                    today_attendance = Attendance.objects.create(
+                        employee=employee,
+                        date=today,
+                        time_in=ph_time.time(),
+                        status=status
+                    )
+                
+                messages.success(request, message)
+        
+        elif action == 'clock_out':
+            if today_attendance and today_attendance.time_in and not today_attendance.time_out:
+                ph_time = get_philippines_time()
+                today_attendance.time_out = ph_time.time()
+                today_attendance.save()
+                messages.success(request, f"🌇 Great day {employee.name}! Clocked out at {ph_time.strftime('%I:%M %p')}")
+            else:
+                messages.error(request, "🏖️ Can't clock out - check your status!")
+        
+        return redirect('employee_clock_attendance')
+    
+    context = {
+        'employee': employee,
+        'today_attendance': today_attendance,
+        'today': today,
+        'current_time': current_time,
+        'work_start_time': current_time.replace(hour=9, minute=0),
+        'late_threshold': current_time.replace(hour=9, minute=15),
+    }
+    
+    return render(request, 'emp_app/employee/clock_attendance.html', context)
 
 
 @admin_required
@@ -750,41 +907,18 @@ def attendance_management(request):
     })
 
 # Employee attendance view (for employees to clock in/out)
-@employee_required
-def employee_clock_attendance(request):  # New name to avoid conflicts
-    """Employee clock in/out page with manual time entry"""
-    employee = request.user.employee_profile
-    today = timezone.now().date()
-    current_time = timezone.now().strftime('%H:%M')
-    
-    # Get today's attendance
-    today_attendance = Attendance.objects.filter(employee=employee, date=today).first()
+
+
+@admin_required
+def delete_attendance(request, attendance_id):
+    """Delete an attendance record"""
+    attendance = get_object_or_404(Attendance, pk=attendance_id)
     
     if request.method == 'POST':
-        action = request.POST.get('action')
-        
-        if action == 'clock_in' and not today_attendance:
-            time_in = request.POST.get('time_in')
-            status = request.POST.get('status', 'present')
-            
-            Attendance.objects.create(
-                employee=employee,
-                date=today,
-                time_in=time_in,
-                status=status
-            )
-            messages.success(request, f'Successfully clocked in at {time_in}!')
-            
-        elif action == 'clock_out' and today_attendance and not today_attendance.time_out:
-            time_out = request.POST.get('time_out')
-            today_attendance.time_out = time_out
-            today_attendance.save()
-            messages.success(request, f'Successfully clocked out at {time_out}!')
-        
-        return redirect('employee_clock_attendance')
+        employee_name = attendance.employee.name
+        attendance_date = attendance.date
+        attendance.delete()
+        messages.success(request, f"🏖️ Beach record for {employee_name} on {attendance_date} has been deleted!")
+        return redirect('attendance_management')
     
-    return render(request, 'emp_app/employee/clock_attendance.html', {
-        'today_attendance': today_attendance,
-        'employee': employee,
-        'current_time': current_time
-    })
+    return render(request, 'emp_app/admin/delete_attendance.html', {'attendance': attendance})

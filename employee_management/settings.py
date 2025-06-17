@@ -12,6 +12,13 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 from django.contrib.messages import constants as messages
+import os
+from datetime import timezone
+
+TIME_ZONE = 'Asia/Manila' 
+USE_TZ = True
+
+
 
 MESSAGE_TAGS = {
     messages.SUCCESS: 'success',

@@ -1,205 +1,170 @@
 {% extends 'emp_app/emp_base.html' %}
 {% load static %}
-
 {% block content %}
-<div class="max-w-6xl mx-auto p-6">
-    <!-- Header Section -->
-    <div class="mb-8">
-        <h2 class="text-3xl font-bold text-gray-800 mb-2 flex items-center">
-            <svg class="w-8 h-8 mr-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-            </svg>
-            Clock In/Out
-        </h2>
-        <p class="text-gray-600">Record your daily attendance</p>
+<div class="min-h-screen bg-gradient-to-br from-cyan-100 via-blue-50 to-teal-100 relative overflow-hidden">
+    <!-- Beach Wave Background -->
+    <div class="absolute inset-0">
+        <svg class="absolute bottom-0 w-full h-32 text-cyan-200 opacity-30" preserveAspectRatio="none" viewBox="0 0 1200 120" fill="currentColor">
+            <path d="M0,0 C300,40 600,80 900,60 C1050,50 1150,30 1200,20 L1200,120 L0,120 Z"/>
+        </svg>
     </div>
-
-    <!-- Today's Status Card -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-        <!-- Current Status -->
-        <div class="bg-gradient-to-r {% if today_attendance and today_attendance.time_out %}from-green-400 to-green-500{% elif today_attendance %}from-blue-400 to-blue-500{% else %}from-gray-400 to-gray-500{% endif %} rounded-lg shadow-lg p-6 text-white">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-white text-sm font-medium opacity-90">Today's Status</p>
-                    {% if today_attendance and today_attendance.time_out %}
-                        <p class="text-3xl font-bold">Completed</p>
-                        <p class="text-white text-xs opacity-90">Work day finished</p>
-                    {% elif today_attendance %}
-                        <p class="text-3xl font-bold">Clocked In</p>
-                        <p class="text-white text-xs opacity-90">Currently working</p>
-                    {% else %}
-                        <p class="text-3xl font-bold">Not Started</p>
-                        <p class="text-white text-xs opacity-90">Ready to clock in</p>
-                    {% endif %}
+    <div class="container mx-auto px-4 py-8 relative z-10">
+        <!-- Header -->
+        <div class="text-center mb-10">
+            <div class="flex justify-center items-center mb-4">
+                <div class="bg-gradient-to-r from-cyan-400 to-teal-500 rounded-full p-4 shadow-lg">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
                 </div>
-                <div class="bg-white bg-opacity-30 rounded-full p-3">
-                    {% if today_attendance and today_attendance.time_out %}
-                        <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                        </svg>
-                    {% elif today_attendance %}
-                        <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
-                        </svg>
-                    {% else %}
-                        <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
-                        </svg>
+            </div>
+            <h1 class="text-4xl font-bold bg-gradient-to-r from-teal-600 to-cyan-600 bg-clip-text text-transparent mb-3">
+                ⏰ Time Tracker 📅
+            </h1>
+            <p class="text-teal-700 text-lg">Record your daily attendance automatically!</p>
+        </div>
+        <!-- Current Time Display -->
+        <div class="text-center mb-8">
+            <div class="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl border border-cyan-200 p-6 max-w-md mx-auto">
+                <h3 class="text-lg font-semibold text-teal-800 mb-2">Current Time</h3>
+                <div id="current-time" class="text-3xl font-bold text-teal-600"></div>
+                <div class="text-sm text-gray-600 mt-1">{{ today_attendance.date|date:"l, F j, Y"|default:"Today" }}</div>
+            </div>
+        </div>
+        <!-- Today's Status -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <!-- Status Card -->
+            <div class="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl border border-cyan-200 p-8">
+                <h3 class="text-xl font-bold text-teal-800 mb-6 flex items-center">
+                    <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Today's Status
+                </h3>
+                
+                {% if today_attendance and today_attendance.time_out %}
+                    <div class="text-center">
+                        <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                        </div>
+                        <h4 class="text-2xl font-bold text-green-600 mb-2">Work Complete! 🎉</h4>
+                        <p class="text-gray-600">You've finished your work day</p>
+                    </div>
+                {% elif today_attendance %}
+                    <div class="text-center">
+                        <div class="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <div class="w-4 h-4 bg-blue-500 rounded-full animate-pulse"></div>
+                        </div>
+                        <h4 class="text-2xl font-bold text-blue-600 mb-2">Currently Working 💼</h4>
+                        <p class="text-gray-600">Clocked in at {{ today_attendance.time_in|time:"g:i A" }}</p>
+                        {% if work_duration %}
+                            <div class="mt-3 text-sm text-gray-500">
+                                Work time: {{ work_duration.seconds|floatformat:0|default:0 }}s
+                            </div>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <div class="text-center">
+                        <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <h4 class="text-2xl font-bold text-gray-600 mb-2">Ready to Start 🌅</h4>
+                        <p class="text-gray-600">Click "Clock In" to begin your day</p>
+                    </div>
+                {% endif %}
+            </div>
+            <!-- Work Details -->
+            <div class="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl border border-cyan-200 p-8">
+                <h3 class="text-xl font-bold text-teal-800 mb-6 flex items-center">
+                    <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                    Work Schedule
+                </h3>
+                
+                <div class="space-y-4">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Work Starts:</span>
+                        <span class="font-medium text-green-600">{{ work_start_time|time:"g:i A" }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Late After:</span>
+                        <span class="font-medium text-yellow-600">{{ late_threshold|time:"g:i A" }}</span>
+                    </div>
+                    {% if today_attendance %}
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Your Clock In:</span>
+                            <span class="font-medium 
+                                {% if today_attendance.status == 'present' %}text-green-600
+                                {% else %}text-yellow-600{% endif %}">
+                                {{ today_attendance.time_in|time:"g:i A" }}
+                            </span>
+                        </div>
+                        {% if today_attendance.time_out %}
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Your Clock Out:</span>
+                                <span class="font-medium text-red-600">{{ today_attendance.time_out|time:"g:i A" }}</span>
+                            </div>
+                        {% endif %}
                     {% endif %}
                 </div>
             </div>
         </div>
-
-        <!-- Today's Details -->
-        <div class="bg-white rounded-lg shadow-lg p-6 border border-gray-100">
-            <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                </svg>
-                Today's Record
-            </h3>
-            {% if today_attendance %}
-                <div class="space-y-3">
-                    <div class="flex justify-between">
-                        <span class="text-gray-600">Date:</span>
-                        <span class="font-medium">{{ today_attendance.date|date:"M d, Y" }}</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-gray-600">Time In:</span>
-                        <span class="font-medium text-green-600">{{ today_attendance.time_in|time:"g:i A" }}</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-gray-600">Time Out:</span>
-                        <span class="font-medium {% if today_attendance.time_out %}text-red-600{% else %}text-yellow-600{% endif %}">
-                            {% if today_attendance.time_out %}
-                                {{ today_attendance.time_out|time:"g:i A" }}
-                            {% else %}
-                                Not yet
-                            {% endif %}
-                        </span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-gray-600">Status:</span>
-                        <span class="font-medium text-blue-600">{{ today_attendance.get_status_display }}</span>
-                    </div>
-                </div>
-            {% else %}
-                <p class="text-gray-500 text-center py-4">No attendance record for today</p>
+        <!-- Action Buttons -->
+        <div class="max-w-md mx-auto">
+            {% if not today_attendance %}
+                <!-- Clock In Button -->
+                <form method="post" class="mb-4">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="clock_in">
+                    <button type="submit" class="w-full bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold py-4 px-6 rounded-2xl shadow-xl hover:from-green-600 hover:to-emerald-600 transform hover:scale-105 transition-all duration-200 flex items-center justify-center">
+                        <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
+                        </svg>
+                        🌅 Clock In
+                    </button>
+                </form>
+            {% elif not today_attendance.time_out %}
+                <!-- Clock Out Button -->
+                <form method="post" class="mb-4">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="clock_out">
+                    <button type="submit" class="w-full bg-gradient-to-r from-red-500 to-pink-500 text-white font-bold py-4 px-6 rounded-2xl shadow-xl hover:from-red-600 hover:to-pink-600 transform hover:scale-105 transition-all duration-200 flex items-center justify-center">
+                        <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                        </svg>
+                        🌅 Clock Out
+                    </button>
+                </form>
             {% endif %}
+            
+            <!-- View History Button -->
+            <a href="{% url 'attendance_list' %}" class="w-full bg-gradient-to-r from-teal-500 to-cyan-500 text-white font-bold py-4 px-6 rounded-2xl shadow-xl hover:from-teal-600 hover:to-cyan-600 transform hover:scale-105 transition-all duration-200 flex items-center justify-center">
+                <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+                </svg>
+                📊 View History
+            </a>
         </div>
-    </div>
-
-    <!-- Clock In/Out Forms -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <!-- Clock In Form -->
-        <div class="bg-white rounded-lg shadow-lg border border-gray-100 overflow-hidden">
-            <div class="px-6 py-4 bg-green-50 border-b">
-                <h3 class="text-lg font-semibold text-green-800 flex items-center">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
-                    </svg>
-                    Clock In
-                </h3>
-            </div>
-            <div class="p-6">
-                {% if not today_attendance %}
-                    <form method="post" class="space-y-4">
-                        {% csrf_token %}
-                        <input type="hidden" name="action" value="clock_in">
-                        
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Clock In Time</label>
-                            <input type="time" name="time_in" required 
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                                   value="{{ current_time }}">
-                        </div>
-                        
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                            <select name="status" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
-                                <option value="present">Present</option>
-                                <option value="late">Late</option>
-                            </select>
-                        </div>
-                        
-                        <button type="submit" class="w-full bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-md transition duration-150 ease-in-out flex items-center justify-center">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
-                            </svg>
-                            Clock In
-                        </button>
-                    </form>
-                {% else %}
-                    <div class="text-center py-8">
-                        <svg class="w-16 h-16 mx-auto text-green-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                        <p class="text-green-600 font-medium">Already clocked in today!</p>
-                        <p class="text-gray-500 text-sm">Clocked in at {{ today_attendance.time_in|time:"g:i A" }}</p>
-                    </div>
-                {% endif %}
-            </div>
-        </div>
-
-        <!-- Clock Out Form -->
-        <div class="bg-white rounded-lg shadow-lg border border-gray-100 overflow-hidden">
-            <div class="px-6 py-4 bg-red-50 border-b">
-                <h3 class="text-lg font-semibold text-red-800 flex items-center">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-                    </svg>
-                    Clock Out
-                </h3>
-            </div>
-            <div class="p-6">
-                {% if today_attendance and not today_attendance.time_out %}
-                    <form method="post" class="space-y-4">
-                        {% csrf_token %}
-                        <input type="hidden" name="action" value="clock_out">
-                        
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Clock Out Time</label>
-                            <input type="time" name="time_out" required 
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                                   value="{{ current_time }}">
-                        </div>
-                        
-                        <button type="submit" class="w-full bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded-md transition duration-150 ease-in-out flex items-center justify-center">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-                            </svg>
-                            Clock Out
-                        </button>
-                    </form>
-                {% elif today_attendance and today_attendance.time_out %}
-                    <div class="text-center py-8">
-                        <svg class="w-16 h-16 mx-auto text-red-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                        <p class="text-red-600 font-medium">Already clocked out today!</p>
-                        <p class="text-gray-500 text-sm">Clocked out at {{ today_attendance.time_out|time:"g:i A" }}</p>
-                    </div>
-                {% else %}
-                    <div class="text-center py-8">
-                        <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                        <p class="text-gray-500 font-medium">Please clock in first</p>
-                        <p class="text-gray-400 text-sm">You need to clock in before clocking out</p>
-                    </div>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-
-    <!-- Quick Actions -->
-    <div class="mt-8 text-center">
-        <a href="{% url 'attendance_list' %}" class="inline-flex items-center px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-md transition duration-150 ease-in-out">
-            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
-            </svg>
-            View My Attendance History
-        </a>
     </div>
 </div>
+<script>
+function updateCurrentTime() {
+    const now = new Date();
+    const timeString = now.toLocaleTimeString('en-US', {
+        hour12: true,
+        hour: 'numeric',
+        minute: '2-digit',
+        second: '2-digit'
+    });
+    document.getElementById('current-time').textContent = timeString;
+}
+// Update time immediately and then every second
+updateCurrentTime();
+setInterval(updateCurrentTime, 1000);
+</script>
 {% endblock %}
