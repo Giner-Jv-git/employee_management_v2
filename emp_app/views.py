@@ -710,6 +710,44 @@ def attendance_list(request):
 #attendance
 
 @admin_required
+def attendance_management(request):
+    from django.utils import timezone
+    
+    today = timezone.now().date()
+    employees = EmployeeData.objects.all()
+    recent_attendance = Attendance.objects.select_related('employee').order_by('-date')[:20]
+    
+    # Get today's attendance for all employees
+    today_attendance = Attendance.objects.filter(date=today)
+    
+    # Add today's attendance to each employee
+    for employee in employees:
+        employee.today_attendance = today_attendance.filter(employee=employee).first()
+    
+    # Calculate statistics for the dashboard
+    working_employees = today_attendance.filter(time_out__isnull=True)
+    absent_employees = employees.exclude(
+        id__in=today_attendance.values_list('employee_id', flat=True)
+    )
+    
+    # Calculate counts for template
+    present_count = today_attendance.filter(status='present').count()
+    late_count = today_attendance.filter(status='late').count()
+    absent_count = absent_employees.count()
+    working_count = working_employees.count()
+    
+    return render(request, 'emp_app/admin/attendance_management.html', {
+        'employees': employees,
+        'recent_attendance': recent_attendance,
+        'working_employees': working_employees,
+        'absent_employees': absent_employees,
+        'today': today,
+        'present_count': present_count + late_count,  # Present + Late = Total showed up
+        'absent_count': absent_count,
+        'working_count': working_count,
+    })
+
+@admin_required
 def add_attendance(request, employee_id):
     employee = get_object_or_404(EmployeeData, pk=employee_id)
     if request.method == 'POST':
@@ -750,40 +788,7 @@ def add_attendance(request, employee_id):
     
     return render(request, 'emp_app/admin/add_attendance.html', {'employee': employee})
 
-@admin_required
-def attendance_management(request):
-    today = timezone.now().date()
-    employees = EmployeeData.objects.filter(status='active').order_by('name')
-    
-    # Get today's attendance for all employees
-    today_attendance = Attendance.objects.filter(date=today).select_related('employee')
-    
-    # Add today's attendance to each employee
-    for employee in employees:
-        employee.today_attendance = today_attendance.filter(employee=employee).first()
-    
-    # Calculate statistics
-    present_employees = today_attendance.filter(status__in=['present', 'late'])
-    working_employees = present_employees.filter(time_out__isnull=True)
-    completed_employees = present_employees.filter(time_out__isnull=False)
-    absent_employees = employees.exclude(
-        id__in=today_attendance.values_list('employee_id', flat=True)
-    )
-    
-    # Recent attendance (last 10 records)
-    recent_attendance = Attendance.objects.select_related('employee').order_by('-date', '-time_in')[:10]
-    
-    context = {
-        'employees': employees,
-        'recent_attendance': recent_attendance,
-        'present_count': present_employees.count(),
-        'working_count': working_employees.count(),
-        'completed_count': completed_employees.count(),
-        'absent_count': absent_employees.count(),
-        'today': today,
-    }
-    
-    return render(request, 'emp_app/admin/attendance_management.html', context)
+
 
 
 def get_philippines_time():
@@ -878,33 +883,7 @@ def employee_clock_attendance(request):
     return render(request, 'emp_app/employee/clock_attendance.html', context)
 
 
-@admin_required
-def attendance_management(request):
-    from django.utils import timezone
-    
-    today = timezone.now().date()
-    employees = EmployeeData.objects.all()
-    recent_attendance = Attendance.objects.select_related('employee').order_by('-date')[:20]
-    
-    # Get today's attendance for all employees
-    today_attendance = Attendance.objects.filter(date=today)
-    
-    # Add today's attendance to each employee
-    for employee in employees:
-        employee.today_attendance = today_attendance.filter(employee=employee).first()
-    
-    # Calculate statistics for the dashboard
-    working_employees = today_attendance.filter(time_out__isnull=True)
-    absent_employees = employees.exclude(
-        id__in=today_attendance.values_list('employee_id', flat=True)
-    )
-    
-    return render(request, 'emp_app/admin/attendance_management.html', {
-        'employees': employees,
-        'recent_attendance': recent_attendance,
-        'working_employees': working_employees,
-        'absent_employees': absent_employees,
-    })
+
 
 # Employee attendance view (for employees to clock in/out)
 
