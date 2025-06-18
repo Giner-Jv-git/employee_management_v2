@@ -2,13 +2,13 @@
 {% load static %}
 
 {% block content %}
-<div class="min-h-screen bg-gradient-to-br from-purple-100 via-pink-50 to-orange-100 relative overflow-hidden">
+<div class="min-h-screen bg-gradient-to-br from-cyan-100 via-blue-50 to-teal-100 relative overflow-hidden">
     <!-- Background Elements -->
     <div class="absolute inset-0">
-        <svg class="absolute top-0 right-0 w-64 h-64 text-purple-200 opacity-20" viewBox="0 0 200 200" fill="currentColor">
+        <svg class="absolute top-0 right-0 w-64 h-64 text-cyan-200 opacity-20" viewBox="0 0 200 200" fill="currentColor">
             <circle cx="100" cy="100" r="80"/>
         </svg>
-        <svg class="absolute bottom-0 left-0 w-48 h-48 text-orange-200 opacity-30" viewBox="0 0 200 200" fill="currentColor">
+        <svg class="absolute bottom-0 left-0 w-48 h-48 text-teal-200 opacity-30" viewBox="0 0 200 200" fill="currentColor">
             <polygon points="100,20 150,80 100,140 50,80"/>
         </svg>
     </div>
@@ -17,21 +17,21 @@
         <!-- Header -->
         <div class="text-center mb-8">
             <div class="flex justify-center items-center mb-4">
-                <div class="bg-gradient-to-r from-purple-500 to-pink-600 rounded-full p-4 shadow-lg">
+                <div class="bg-gradient-to-r from-cyan-500 to-teal-600 rounded-full p-4 shadow-lg">
                     <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                     </svg>
                 </div>
             </div>
-            <h1 class="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-3">
+            <h1 class="text-4xl font-bold bg-gradient-to-r from-teal-600 to-teal-600 bg-clip-text text-transparent mb-3">
                 🏖️ Assign Employee Leave
             </h1>
-            <p class="text-purple-700 text-lg">Grant time off for your team members</p>
+            <p class="text-cyan-700 text-lg">Grant time off for your team members</p>
         </div>
 
         <div class="max-w-2xl mx-auto">
             <!-- Form Card -->
-            <div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-2xl border border-purple-200 p-8">
+            <div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-2xl border border-cyan-200 p-8">
                 <form method="post" class="space-y-6">
                     {% csrf_token %}
                     
@@ -40,8 +40,8 @@
                         <label for="{{ form.employee.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
                             Select Employee <span class="text-red-500">*</span>
                         </label>
-                        <select name="{{ form.employee.name }}" id="{{ form.employee.id_for_label }}" 
-                                class="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white shadow-sm">
+                        <select name="{{ form.employee.name }}" id="{{ form.employee.id_for_label }}"
+                                class="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent bg-white shadow-sm">
                             <option value="">Choose an employee...</option>
                             {% for employee in form.employee.field.queryset %}
                                 <option value="{{ employee.pk }}" 
@@ -62,7 +62,7 @@
                             Leave Type <span class="text-red-500">*</span>
                         </label>
                         <select name="{{ form.leave_type.name }}" id="{{ form.leave_type.id_for_label }}" 
-                                class="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white shadow-sm">
+                                class="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent bg-white shadow-sm">
                             <option value="">Select leave type...</option>
                             {% for value, label in form.leave_type.field.choices %}
                                 {% if value %}
@@ -87,7 +87,7 @@
                             <input type="date" name="{{ form.start_date.name }}" id="{{ form.start_date.id_for_label }}" 
                                    value="{{ form.start_date.value|default:'' }}"
                                    min="{% now 'Y-m-d' %}"
-                                   class="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent shadow-sm">
+                                   class="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent shadow-sm">
                             {% if form.start_date.errors %}
                                 <p class="mt-1 text-sm text-red-600">{{ form.start_date.errors.0 }}</p>
                             {% endif %}
@@ -130,23 +130,23 @@
                         </label>
                         <textarea name="{{ form.reason.name }}" id="{{ form.reason.id_for_label }}" rows="4" 
                                   placeholder="Provide details about the leave assignment..."
-                                  class="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent shadow-sm resize-none">{{ form.reason.value|default:'' }}</textarea>
+                                  class="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent shadow-sm resize-none">{{ form.reason.value|default:'' }}</textarea>
                         {% if form.reason.errors %}
                             <p class="mt-1 text-sm text-red-600">{{ form.reason.errors.0 }}</p>
                         {% endif %}
                     </div>
 
                     <!-- Admin Note -->
-                    <div class="bg-purple-50 border border-purple-200 rounded-xl p-4">
+                    <div class="bg-teal-50 border border-teal-200 rounded-xl p-4">
                         <div class="flex items-start">
-                            <div class="bg-purple-500 rounded-full p-1 mr-3 mt-1">
+                            <div class="bg-teal-500 rounded-full p-1 mr-3 mt-1">
                                 <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
                                 </svg>
                             </div>
                             <div>
-                                <div class="text-sm font-semibold text-purple-800">Admin Assignment</div>
-                                <div class="text-sm text-purple-600">This leave will be automatically approved and marked as admin-assigned.</div>
+                                <div class="text-sm font-semibold text-teal-800">Admin Assignment</div>
+                                <div class="text-sm text-teal-600">This leave will be automatically approved and marked as admin-assigned.</div>
                             </div>
                         </div>
                     </div>
@@ -154,7 +154,7 @@
                     <!-- Form Actions -->
                     <div class="flex flex-col sm:flex-row gap-4 pt-6">
                         <button type="submit" 
-                                class="flex-1 bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-bold py-4 px-6 rounded-xl shadow-lg transform transition-all duration-300 hover:scale-105 flex items-center justify-center">
+                                class="flex-1 bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-600 hover:to-cyan-700 text-white font-bold py-4 px-6 rounded-xl shadow-lg transform transition-all duration-300 hover:scale-105 flex items-center justify-center">
                             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                             </svg>
@@ -175,7 +175,7 @@
             <!-- Quick Actions -->
             <div class="mt-8 flex justify-center space-x-4">
                 <a href="{% url 'leave_requests_admin' %}" 
-                   class="bg-white/90 backdrop-blur-sm hover:bg-white text-purple-700 font-medium py-2 px-4 rounded-xl shadow-lg transition-all duration-300 flex items-center">
+                   class="bg-white/90 backdrop-blur-sm hover:bg-white text-teal-700 font-medium py-2 px-4 rounded-xl shadow-lg transition-all duration-300 flex items-center">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
                     </svg>
@@ -183,7 +183,7 @@
                 </a>
                 
                 <a href="{% url 'admin_dashboard' %}" 
-                   class="bg-white/90 backdrop-blur-sm hover:bg-white text-purple-700 font-medium py-2 px-4 rounded-xl shadow-lg transition-all duration-300 flex items-center">
+                   class="bg-white/90 backdrop-blur-sm hover:bg-white text-teal-700 font-medium py-2 px-4 rounded-xl shadow-lg transition-all duration-300 flex items-center">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5v4"></path>

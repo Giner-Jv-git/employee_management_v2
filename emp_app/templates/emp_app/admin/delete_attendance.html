@@ -1,4 +1,5 @@
-{% extends 'emp_app/emp_base.html' %}
+{% extends 'emp_app/base.html' %}
+{% load static %}
 
 {% block content %}
 <div class="min-h-screen bg-gradient-to-br from-cyan-100 via-blue-50 to-teal-100 relative overflow-hidden">
@@ -150,25 +151,5 @@
     </div>
 </div>
 
-<script>
-// Add confirmation dialog
-document.querySelector('form').addEventListener('submit', function(e) {
-    if (!confirm('🏖️ Are you absolutely sure you want to erase this beach memory? This action cannot be undone!')) {
-        e.preventDefault();
-    }
-});
-
-// Add floating animation to cards
-document.addEventListener('DOMContentLoaded', function() {
-    const cards = document.querySelectorAll('.backdrop-blur-sm');
-    cards.forEach(card => {
-        card.addEventListener('mouseenter', function() {
-            this.style.transform = 'translateY(-5px)';
-        });
-        card.addEventListener('mouseleave', function() {
-            this.style.transform = 'translateY(0)';
-        });
-    });
-});
-</script>
+<script src="{% static 'emp_app/js/deletefunc.js' %}" ></script>
 {% endblock %}

@@ -352,13 +352,25 @@ class DeleteEmployeeView(AdminRequiredMixin, DeleteView):
     model = EmployeeData
     template_name = 'emp_app/admin/confirm_delete.html'
     success_url = reverse_lazy('view_table')
-
     def delete(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        user = self.object.user
+        # Store employee info before deletion
+        employee = self.get_object()
+        employee_name = employee.name
+        user = employee.user
+        
+        # Call parent delete method
         response = super().delete(request, *args, **kwargs)
-        user.delete()
-        messages.success(request, "Employee and user account deleted.")
+        
+        # Delete associated user
+        if user:
+            user.delete()
+        
+        # Add success message
+        messages.success(
+            request, 
+            f"🏖️ {employee_name} and their user account have been deleted from the beach!"
+        )
+        
         return response
 
 class EmployeeDetailView(AdminRequiredMixin, DetailView):
@@ -747,46 +759,7 @@ def attendance_management(request):
         'working_count': working_count,
     })
 
-@admin_required
-def add_attendance(request, employee_id):
-    employee = get_object_or_404(EmployeeData, pk=employee_id)
-    if request.method == 'POST':
-        date = request.POST['date']
-        time_in = request.POST['time_in']
-        time_out = request.POST.get('time_out', None)
-        status = request.POST['status']
-        
-        # Convert time strings to time objects for validation
-        try:
-            time_in_obj = datetime.strptime(time_in, '%H:%M').time()
-            time_out_obj = None
-            if time_out:
-                time_out_obj = datetime.strptime(time_out, '%H:%M').time()
-                # Validate that time_out is after time_in
-                if time_out_obj <= time_in_obj:
-                    messages.error(request, "Time out must be after time in!")
-                    return render(request, 'emp_app/admin/add_attendance.html', {'employee': employee})
-        except ValueError:
-            messages.error(request, "Invalid time format!")
-            return render(request, 'emp_app/admin/add_attendance.html', {'employee': employee})
-        
-        # Check if attendance already exists for this date
-        existing_attendance = Attendance.objects.filter(employee=employee, date=date).first()
-        if existing_attendance:
-            messages.error(request, f"Attendance record already exists for {employee.name} on {date}!")
-            return render(request, 'emp_app/admin/add_attendance.html', {'employee': employee})
-        
-        Attendance.objects.create(
-            employee=employee,
-            date=date,
-            time_in=time_in_obj,
-            time_out=time_out_obj,
-            status=status
-        )
-        messages.success(request, f"Attendance added for {employee.name}!")
-        return redirect('attendance_management')
-    
-    return render(request, 'emp_app/admin/add_attendance.html', {'employee': employee})
+
 
 
 

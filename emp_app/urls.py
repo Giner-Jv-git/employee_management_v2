@@ -4,7 +4,7 @@ from django.contrib.auth.views import LogoutView
 from .views import (
     EditEmployeeView, DeleteEmployeeView, EmployeeDetailView,
     add_employee, employee_profile, request_leave, approve_leave,
-    attendance_list, add_attendance, leave_requests_admin, reject_leave,
+    attendance_list,leave_requests_admin, reject_leave,
     attendance_management, employee_clock_attendance, cancel_current_leave, early_return_from_leave,delete_attendance
 )
 
@@ -30,7 +30,6 @@ urlpatterns = [
     # Attendance Management
     # ---------------------------
     path('attendance-management/', attendance_management, name='attendance_management'),
-    path('employees/<int:employee_id>/add-attendance/', add_attendance, name='add_attendance'),
     path('attendance/delete/<int:attendance_id>/', delete_attendance, name='delete_attendance'),
     
 
