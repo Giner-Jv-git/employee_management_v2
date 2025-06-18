@@ -248,7 +248,7 @@ class EmployeeTableView(AdminRequiredMixin, ListView):
     model = EmployeeData
     template_name = 'emp_app/admin/view_table.html'
     context_object_name = 'employees'
-    paginate_by = 10
+    paginate_by = 5
     def get_queryset(self):
         from django.utils import timezone
         
